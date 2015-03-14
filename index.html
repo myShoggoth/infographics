@@ -139,7 +139,7 @@
 
 					// create function to update pie-chart. This will be used by histogram.
 					pC.update = function(nD){
-						piesvg.selectAll("path").data(pie(nD)).transition().duration(500)
+						piesvg.selectAll("path").data(pie(nD)).transition().duration(10)
 						.attrTween("d", arcTween);
 					}        
 					// Animating the pie-slice requiring a custom function which specifies
