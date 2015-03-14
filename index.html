@@ -4,84 +4,101 @@
 		<title>Hello D3</title>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
-			.chart rect {
-				fill: steelblue;
+			path {  stroke: #fff; }
+			path:hover {  opacity:0.9; }
+			rect:hover {  fill:blue; }
+			.axis {  font: 10px sans-serif; }
+			.legend tr{    border-bottom:1px solid grey; }
+			.legend tr:first-child{    border-top:1px solid grey; }
+
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: #000;
+				shape-rendering: crispEdges;
 			}
 
-			.chart text {
-				fill: white;
-				font: 10px sans-serif;
-				text-anchor: end;
+			.x.axis path {  display: none; }
+			.legend{
+				margin-bottom:76px;
+				display:inline-block;
+				border-collapse: collapse;
+				border-spacing: 0px;
+			}
+			.legend td{
+				padding:4px 5px;
+				vertical-align:bottom;
+			}
+			.legendFreq, .legendPerc{
+				align:right;
+				width:50px;
 			}
 
-			.chart div {
-				font: 10px sans-serif;
-				background-color: steelblue;
-				text-align: right;
-				padding: 3px;
-				margin: 1px;
-				color: white;
-			}
 		</style>
 	</head>
 	<body>
 
 		<div class="error"></div>
 		<div id="dashboard"></div>
+		<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-premoney">
+		<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-investment">
 		<script>
 			var data = [
+			{
+				"name": "Founding",
+				"stockType": "Restricted",
+				"date": "01/01/2015",
+				"preMoneyValuation": "0.0",
+				"optionPoolPercent": "0.0",
+				"optionPoolPreMoney": 't',
+				"dividendCompounding": 't',
+				"liquidationPref": "0.0",
+				"dividendYield": "0.0",
+				"liquidationCap": "0.0",
+				"investments": [
 				{
-					"name": "Founding",
-					"stockType": "Restricted",
-					"date": "01/01/2015",
-					"preMoneyValuation": "0.0",
-					"optionPoolPercent": "0.0",
-					"optionPoolPreMoney": 't',
-					"dividendCompounding": 't',
-					"liquidationPref": "0.0",
-					"dividendYield": "0.0",
-					"liquidationCap": "0.0",
-					"investments": [
-						{
-							"name": "Founders",
-							"shares": "3000000"
-						}
-					]
-				},
-				{
-					"name": "Seed",
-					"stockType": "Common",
-					"date": "02/01/2015",
-					"preMoneyValuation": "3000000",
-					"optionPoolPercent": "0.0",
-					"optionPoolPreMoney": 't',
-					"dividendCompounding": 't',
-					"liquidationPref": "0.0",
-					"dividendYield": "0.0",
-					"liquidationCap": "0.0",
-					"investments": [
-						{
-							"name": "Seed Investors",
-							"amount": "2000000"
-						}
-					]
+					"name": "Founders",
+					"shares": "3000000"
 				}
+				]
+			},
+			{
+				"name": "Seed",
+				"stockType": "Common",
+				"date": "02/01/2015",
+				"preMoneyValuation": "3000000",
+				"optionPoolPercent": "0.0",
+				"optionPoolPreMoney": 't',
+				"dividendCompounding": 't',
+				"liquidationPref": "0.0",
+				"dividendYield": "0.0",
+				"liquidationCap": "0.0",
+				"investments": [
+				{
+					"name": "Seed Investors",
+					"amount": "2000000"
+				}
+				]
+			}
 			];
+
+			d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
+			d3.select("#slider-investment").property("value", data[1].investments[0].amount);
 
 			function dashboard(id, fData){
 				function segColor(c) {
 					switch (c.name.toLowerCase()) {
 						case "founding":
-					       		color = "#807dba";
-							break;
+						color = "#807dba";
+						break;
 						case "seed":
-						       	color = "#e08214";
-							break;
+						color = "#e08214";
+						break;
 						case "series a":
-							color = "#41ab5d";
-							break;
+						color = "#41ab5d";
+						break;
 						default:
-							color = "green";
+						color = "green";
 					}
 					return color;
 				}
@@ -94,7 +111,7 @@
 					percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
 					if (c.name == "Seed") {
 						return percentOwnershipSeed;
-					} else {
+						} else {
 						return (1.0 - percentOwnershipSeed);
 					}
 
@@ -167,23 +184,38 @@
 						var l = legend.select("tbody").selectAll("tr").data(nD);
 
 						// update the frequencies.
-						l.select(".legendFreq").text(function(d){ return d3.format(",")(percentOwnership(d));});
+						l.select(".legendFreq").text(function(d){ return d.investments[0].name; });
 
 						// update the percentage column.
-						l.select(".legendPerc").text(function(d){ return getLegend(d,nD);});        
+						l.select(".legendPerc").text(function(d){ return d3.format("%")(percentOwnership(d));});        
 					}
 
 					function getLegend(d,aD){ // Utility function to compute percentage.
-					return d3.format("%")(percentOwnership(d)/d3.sum(aD.map(function(v){ return percentOwnership(d); })));
+						return d3.format("%")(percentOwnership(d)/d3.sum(aD.map(function(v){ return percentOwnership(d); })));
+					}
+
+					return leg;
 				}
 
-				return leg;
-			}
+				var pC = pieChart(data), // create the pie-chart.
+				leg= legend(data);  // create the legend.
+				d3.select("#slider-premoney")
+					.on("mousemove", function() {
+						data[1].preMoneyValuation = parseInt(this.value);
+						d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
+						pC.update(data);
+						leg.update(data);
+					});
+				d3.select("#slider-investment")
+					.on("mousemove", function() {
+						data[1].investments[0].amount = parseInt(this.value);
+						d3.select("#slider-investment").property("value", data[1].investments[0].amount);
+						pC.update(data);
+						leg.update(data);
+					});
 
-			var pC = pieChart(data), // create the pie-chart.
-			leg= legend(data);  // create the legend.
-		}
-		dashboard('#dashboard', data);
-	</script>
-		</body>
-	</html>
+			}
+			dashboard('#dashboard', data);
+		</script>
+	</body>
+</html>
