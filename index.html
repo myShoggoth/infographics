@@ -1,0 +1,189 @@
+<!-- index.html -->
+<html>
+	<head>
+		<title>Hello D3</title>
+		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<style>
+			.chart rect {
+				fill: steelblue;
+			}
+
+			.chart text {
+				fill: white;
+				font: 10px sans-serif;
+				text-anchor: end;
+			}
+
+			.chart div {
+				font: 10px sans-serif;
+				background-color: steelblue;
+				text-align: right;
+				padding: 3px;
+				margin: 1px;
+				color: white;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div class="error"></div>
+		<div id="dashboard"></div>
+		<script>
+			var data = [
+				{
+					"name": "Founding",
+					"stockType": "Restricted",
+					"date": "01/01/2015",
+					"preMoneyValuation": "0.0",
+					"optionPoolPercent": "0.0",
+					"optionPoolPreMoney": 't',
+					"dividendCompounding": 't',
+					"liquidationPref": "0.0",
+					"dividendYield": "0.0",
+					"liquidationCap": "0.0",
+					"investments": [
+						{
+							"name": "Founders",
+							"shares": "3000000"
+						}
+					]
+				},
+				{
+					"name": "Seed",
+					"stockType": "Common",
+					"date": "02/01/2015",
+					"preMoneyValuation": "3000000",
+					"optionPoolPercent": "0.0",
+					"optionPoolPreMoney": 't',
+					"dividendCompounding": 't',
+					"liquidationPref": "0.0",
+					"dividendYield": "0.0",
+					"liquidationCap": "0.0",
+					"investments": [
+						{
+							"name": "Seed Investors",
+							"amount": "2000000"
+						}
+					]
+				}
+			];
+
+			function dashboard(id, fData){
+				function segColor(c) {
+					switch (c.name.toLowerCase()) {
+						case "founding":
+					       		color = "#807dba";
+							break;
+						case "seed":
+						       	color = "#e08214";
+							break;
+						case "series a":
+							color = "#41ab5d";
+							break;
+						default:
+							color = "green";
+					}
+					return color;
+				}
+
+				function postmoney(round) {
+					return parseFloat(round.preMoneyValuation) + parseFloat(round.investments[0].amount);
+				}
+
+				function percentOwnership(c) {
+					percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
+					if (c.name == "Seed") {
+						return percentOwnershipSeed;
+					} else {
+						return (1.0 - percentOwnershipSeed);
+					}
+
+				}
+				// function to handle pieChart.
+				function pieChart(pD){
+					var pC ={},    pieDim ={w:250, h: 250};
+					pieDim.r = Math.min(pieDim.w, pieDim.h) / 2;
+
+					// create svg for pie chart.
+					var piesvg = d3.select(id).append("svg")
+					.attr("width", pieDim.w).attr("height", pieDim.h).append("g")
+					.attr("transform", "translate("+pieDim.w/2+","+pieDim.h/2+")");
+
+					// create function to draw the arcs of the pie slices.
+					var arc = d3.svg.arc().outerRadius(pieDim.r - 10).innerRadius(0);
+
+					// create a function to compute the pie slice angles.
+					var pie = d3.layout.pie().sort(null).value(function(d) { return percentOwnership(d); });
+
+					// Draw the pie slices.
+					piesvg.selectAll("path").data(pie(pD)).enter().append("path").attr("d", arc)
+					.each(function(d) { this._current = d; })
+					.style("fill", function(d) { return segColor(d.data); });
+
+					// create function to update pie-chart. This will be used by histogram.
+					pC.update = function(nD){
+						piesvg.selectAll("path").data(pie(nD)).transition().duration(500)
+						.attrTween("d", arcTween);
+					}        
+					// Animating the pie-slice requiring a custom function which specifies
+					// how the intermediate paths should be drawn.
+					function arcTween(a) {
+						var i = d3.interpolate(this._current, a);
+						this._current = i(0);
+						return function(t) { return arc(i(t));    };
+					}    
+					return pC;
+				}
+
+				// function to handle legend.
+				function legend(lD){
+					var leg = {};
+
+					// create table for legend.
+					var legend = d3.select(id).append("table").attr('class','legend');
+
+					// create one row per segment.
+					var tr = legend.append("tbody").selectAll("tr").data(lD).enter().append("tr");
+
+					// create the first column for each segment.
+					tr.append("td").append("svg").attr("width", '16').attr("height", '16').append("rect")
+					.attr("width", '16').attr("height", '16')
+					.attr("fill",function(d){ return segColor(d); });
+
+					// create the second column for each segment.
+					tr.append("td").text(function(d){ return d.type;});
+
+					// create the third column for each segment.
+					tr.append("td").attr("class",'legendName')
+					.text(function(d){ return d.investments[0].name; });
+
+					// create the fourth column for each segment.
+					tr.append("td").attr("class",'legendPerc')
+					.text(function(d){ return d3.format("%")(percentOwnership(d));});
+
+					// Utility function to be used to update the legend.
+					leg.update = function(nD){
+						// update the data attached to the row elements.
+						var l = legend.select("tbody").selectAll("tr").data(nD);
+
+						// update the frequencies.
+						l.select(".legendFreq").text(function(d){ return d3.format(",")(percentOwnership(d));});
+
+						// update the percentage column.
+						l.select(".legendPerc").text(function(d){ return getLegend(d,nD);});        
+					}
+
+					function getLegend(d,aD){ // Utility function to compute percentage.
+					return d3.format("%")(percentOwnership(d)/d3.sum(aD.map(function(v){ return percentOwnership(d); })));
+				}
+
+				return leg;
+			}
+
+			var pC = pieChart(data), // create the pie-chart.
+			leg= legend(data);  // create the legend.
+		}
+		dashboard('#dashboard', data);
+	</script>
+		</body>
+	</html>
