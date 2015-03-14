@@ -40,8 +40,32 @@
 
 		<div class="error"></div>
 		<div id="dashboard"></div>
-		<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-premoney">
-		<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-investment">
+		<table cellspacing="0" cellpadding="0">
+			<thead style="font-size: larger;">
+				<tr>
+					<th style="padding-right: 6px;">Pre-Money Valuation</th>
+					<th style="border-left: thin solid black; padding-left: 6px;">Investment Size</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="padding-right: 6px;">
+						<span>$0</span>
+						<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-premoney">
+						<span>$20,000,000</span>
+					</td>
+					<td style="border-left: thin solid black; padding-left: 6px;">
+						<span>$0</span>
+						<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-investment">
+						<span>$20,000,000</span>
+					</td>
+				</tr>
+				<tr style="text-align: center;">
+					<td id="premoney" style="padding-right: 6px;"></td>
+					<td id="investment" style="border-left: thin solid black; padding-left: 6px;"></td>
+				</tr>
+			</tbody>
+		</table>
 		<script>
 			var data = [
 			{
@@ -200,19 +224,25 @@
 				var pC = pieChart(data), // create the pie-chart.
 				leg= legend(data);  // create the legend.
 				d3.select("#slider-premoney")
-					.on("mousemove", function() {
-						data[1].preMoneyValuation = parseInt(this.value);
-						d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
-						pC.update(data);
-						leg.update(data);
-					});
+				.on("mousemove", function() {
+					data[1].preMoneyValuation = parseInt(this.value);
+					d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
+					pC.update(data);
+					leg.update(data);
+					d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
+					d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+				});
 				d3.select("#slider-investment")
-					.on("mousemove", function() {
-						data[1].investments[0].amount = parseInt(this.value);
-						d3.select("#slider-investment").property("value", data[1].investments[0].amount);
-						pC.update(data);
-						leg.update(data);
-					});
+				.on("mousemove", function() {
+					data[1].investments[0].amount = parseInt(this.value);
+					d3.select("#slider-investment").property("value", data[1].investments[0].amount);
+					pC.update(data);
+					leg.update(data);
+					d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
+					d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+				});
+				d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
+				d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
 
 			}
 			dashboard('#dashboard', data);
