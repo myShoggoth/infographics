@@ -4,6 +4,10 @@
 		<title>Hello D3</title>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
+			h1 {
+				color: #020304;
+			}
+
 			path {  stroke: #fff; }
 			path:hover {  opacity:0.9; }
 			rect:hover {  fill:blue; }
@@ -37,35 +41,27 @@
 		</style>
 	</head>
 	<body>
+		<h1>How Startup Financing Works</h1>
 
-		<div class="error"></div>
+		<div>
+		</div>
+		<div style="width: 230px; text-align: center;">
+			<div>
+				Pre-Money Valuation <span id="premoney"></span>
+			</div>
+			<div>
+				<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-premoney" style="width: 100%;">
+			</div>
+		</div>
+		<div style="width: 220px;">
+			<div style="text-align: center;">
+				Investment Size <span id="investment"></span>
+			</div>
+			<div style="width: 100%;">
+				<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-investment" style="width: 100%;">
+			</div>
+		</div>
 		<div id="dashboard"></div>
-		<table cellspacing="0" cellpadding="0">
-			<thead style="font-size: larger;">
-				<tr>
-					<th style="padding-right: 6px;">Pre-Money Valuation</th>
-					<th style="border-left: thin solid black; padding-left: 6px;">Investment Size</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td style="padding-right: 6px;">
-						<span>$0</span>
-						<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-premoney">
-						<span>$20,000,000</span>
-					</td>
-					<td style="border-left: thin solid black; padding-left: 6px;">
-						<span>$0</span>
-						<input type="range" name="points" min="0" max="20000000" step="1" value="0" id="slider-investment">
-						<span>$20,000,000</span>
-					</td>
-				</tr>
-				<tr style="text-align: center;">
-					<td id="premoney" style="padding-right: 6px;"></td>
-					<td id="investment" style="border-left: thin solid black; padding-left: 6px;"></td>
-				</tr>
-			</tbody>
-		</table>
 		<script>
 			var data = [
 			{
@@ -113,16 +109,16 @@
 				function segColor(c) {
 					switch (c.name.toLowerCase()) {
 						case "founding":
-						color = "#807dba";
+						color = "#541714";
 						break;
 						case "seed":
-						color = "#e08214";
+						color = "#938172";
 						break;
 						case "series a":
-						color = "#41ab5d";
+						color = "#cc9e61";
 						break;
 						default:
-						color = "green";
+						color = "#626266";
 					}
 					return color;
 				}
