@@ -4,8 +4,65 @@
 		<title>Hello D3</title>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
+			body {
+				width: 800px;
+				margin: 2em;
+				font-size: 150%;
+			}
+
 			h1 {
+				color: #541714;
+				text-align: center;
+			}
+
+			h1 .title {
+			}
+
+			p {
+				text-indent: 1em;
+			}
+
+			p strong {
+				color: #541714;
+			}
+
+			.controls {
+				text-align: center;
+			}
+
+			.valuecontrol {
+				width: 280px;
+				text-align: center;
+				display: inline-block;
+				border: medium ridge #626266;
+				border-radius: 6px;
+				background-color: #938172;
 				color: #020304;
+			}
+
+			.valuecontrol .title {
+				padding: 0.5em 0.5em 0 0.5em;
+				font-weight: bold;
+				border-bottom: thin solid #626266;
+			}
+
+			.valuecontrol .value {
+				padding: 0.25em 1em 0.25em 1em;
+			}
+
+			.valuecontrol .control {
+				padding: 0em 1em 0.5em 1em;
+			}
+
+			.and {
+				font-weight: bold;
+				vertical-align: 1em;
+				margin: 0.5em;
+				color: #541714;
+			}
+
+			#dashboard {
+				text-align: center;
 			}
 
 			path {  stroke: #fff; }
@@ -41,27 +98,44 @@
 		</style>
 	</head>
 	<body>
-		<h1>How Startup Financing Works</h1>
+		<h1>How <span class="title">Startup Financing</span> Works</h1>
 
-		<div>
-		</div>
-		<div style="width: 230px; text-align: center;">
-			<div>
-				Pre-Money Valuation <span id="premoney"></span>
+		<p>Founders own 100% of a company until they raise money. You then have two levers to determine ownership after the investment.</p>
+		<div class="controls">
+			<div class="valuecontrol">
+				<div class="title">
+					Pre-Money Valuation
+				</div>
+				<div class="value" id="premoney"></div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-premoney" style="width: 100%;">
+				</div>
 			</div>
-			<div>
-				<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-premoney" style="width: 100%;">
-			</div>
-		</div>
-		<div style="width: 220px;">
-			<div style="text-align: center;">
-				Investment Size <span id="investment"></span>
-			</div>
-			<div style="width: 100%;">
-				<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-investment" style="width: 100%;">
+			<span class="and">and</span>
+			<div class="valuecontrol">
+				<div class="title">
+					Investment Size
+				</div>
+				<div class="value" id="investment"></div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-investment" style="width: 100%;">
+				</div>
 			</div>
 		</div>
 		<div id="dashboard"></div>
+		<p>Stock Option Plan options are created from the <strong>Option Pool</strong>, a pool of shares set aside by the company to attract and retain key employees.</p>
+		<p>The size of the <strong>Option Pool</strong> is often specified as a percentage of total shares.</p>
+		<div class="controls">
+			<div class="valuecontrol">
+				<div class="title">
+					Option Pool
+				</div>
+				<div class="value" id="optionpool"></div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-optionpool" style="width: 100%;">
+				</div>
+			</div>	
+		</div>
 		<script>
 			var data = [
 			{
@@ -87,7 +161,7 @@
 				"stockType": "Common",
 				"date": "02/01/2015",
 				"preMoneyValuation": "3000000",
-				"optionPoolPercent": "0.0",
+				"optionPoolPercent": "0.2",
 				"optionPoolPreMoney": 't',
 				"dividendCompounding": 't',
 				"liquidationPref": "0.0",
@@ -103,39 +177,46 @@
 			];
 
 			d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
+			d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
 			d3.select("#slider-investment").property("value", data[1].investments[0].amount);
+			d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+			d3.select("#slider-optionpool").property("value", data[1].optionPoolPercent * 100);
+			d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent) );
+
+
+			function segColor(c) {
+				switch (c.name.toLowerCase()) {
+					case "founding":
+					color = "#541714";
+					break;
+					case "seed":
+					color = "#938172";
+					break;
+					case "series a":
+					color = "#cc9e61";
+					break;
+					default:
+					color = "#626266";
+				}
+				return color;
+			}
+
+			function postmoney(round) {
+				return parseFloat(round.preMoneyValuation) + parseFloat(round.investments[0].amount);
+			}
+
+			function percentOwnership(c) {
+				percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
+				if (c.name == "Seed") {
+					return percentOwnershipSeed;
+					} else {
+					return (1.0 - percentOwnershipSeed);
+				}
+
+			}
 
 			function dashboard(id, fData){
-				function segColor(c) {
-					switch (c.name.toLowerCase()) {
-						case "founding":
-						color = "#541714";
-						break;
-						case "seed":
-						color = "#938172";
-						break;
-						case "series a":
-						color = "#cc9e61";
-						break;
-						default:
-						color = "#626266";
-					}
-					return color;
-				}
 
-				function postmoney(round) {
-					return parseFloat(round.preMoneyValuation) + parseFloat(round.investments[0].amount);
-				}
-
-				function percentOwnership(c) {
-					percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
-					if (c.name == "Seed") {
-						return percentOwnershipSeed;
-						} else {
-						return (1.0 - percentOwnershipSeed);
-					}
-
-				}
 				// function to handle pieChart.
 				function pieChart(pD){
 					var pC ={},    pieDim ={w:250, h: 250};
@@ -226,7 +307,6 @@
 					pC.update(data);
 					leg.update(data);
 					d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
-					d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
 				});
 				d3.select("#slider-investment")
 				.on("mousemove", function() {
@@ -234,11 +314,15 @@
 					d3.select("#slider-investment").property("value", data[1].investments[0].amount);
 					pC.update(data);
 					leg.update(data);
-					d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
 					d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
 				});
-				d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
-				d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+				d3.select("#slider-optionpool")
+				.on("mousemove", function() {
+					data[1].optionPoolPercent = parseInt(this.value) / 100.0;
+					d3.select("#slider-optionpool").property("value", data[1].optionPoolPrecent);
+					d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent));
+				});
+
 
 			}
 			dashboard('#dashboard', data);
