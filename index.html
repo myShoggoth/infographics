@@ -43,17 +43,21 @@
 			.valuecontrol .title {
 				padding: 0.5em 0.5em 0 0.5em;
 				font-weight: bold;
-				border-bottom: thin solid #626266;
 			}
 
 			.valuecontrol .value {
-				padding: 0.25em 1em 0.25em 1em;
+				padding: 0em 0.5em 0.5em 0.5em;
 			}
 
 			.valuecontrol .control {
-				padding: 0em 1em 0.5em 1em;
+				margin: 0px;
+				padding: 0px;
 			}
 
+			.valuecontrol .control input {
+				margin: 0px;
+				padding: 0px;
+			}
 			.and {
 				font-weight: bold;
 				vertical-align: 1em;
@@ -106,20 +110,20 @@
 				<div class="title">
 					Pre-Money Valuation
 				</div>
-				<div class="value" id="premoney"></div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-premoney" style="width: 100%;">
 				</div>
+				<div class="value" id="premoney"></div>
 			</div>
 			<span class="and">and</span>
 			<div class="valuecontrol">
 				<div class="title">
 					Investment Size
 				</div>
-				<div class="value" id="investment"></div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-investment" style="width: 100%;">
 				</div>
+				<div class="value" id="investment"></div>
 			</div>
 		</div>
 		<div id="dashboard"></div>
@@ -130,10 +134,10 @@
 				<div class="title">
 					Option Pool
 				</div>
-				<div class="value" id="optionpool"></div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-optionpool" style="width: 100%;">
 				</div>
+				<div class="value" id="optionpool"></div>
 			</div>	
 		</div>
 		<script>
