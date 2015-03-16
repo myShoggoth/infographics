@@ -16,6 +16,8 @@
 			}
 
 			h1 .title {
+				font-size: 200%;
+				color: #cc9e61;
 			}
 
 			p {
@@ -65,7 +67,7 @@
 				color: #541714;
 			}
 
-			#dashboard {
+			.chart {
 				text-align: center;
 			}
 
@@ -126,8 +128,8 @@
 				<div class="value" id="investment"></div>
 			</div>
 		</div>
-		<div id="dashboard"></div>
-		<p>Stock Option Plan options are created from the <strong>Option Pool</strong>, a pool of shares set aside by the company to attract and retain key employees.</p>
+		<div id="premoney-chart" class="chart"></div>
+		<p>Stock options are created from the <strong>Option Pool</strong>, shares set aside by the company to attract and retain key employees.</p>
 		<p>The size of the <strong>Option Pool</strong> is often specified as a percentage of total shares.</p>
 		<div class="controls">
 			<div class="valuecontrol">
@@ -140,6 +142,8 @@
 				<div class="value" id="optionpool"></div>
 			</div>	
 		</div>
+		<p>It can be created from either the <strong>Pre-Money</strong><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><strong>Post-Money</strong> side.</p>
+		<div id="optionpool-chart" class="chart"></div>
 		<script>
 			var data = [
 			{
@@ -173,30 +177,41 @@
 				"liquidationCap": "0.0",
 				"investments": [
 				{
-					"name": "Seed Investors",
+					"name": "Investors",
 					"amount": "2000000"
 				}
 				]
 			}
 			];
 
-			d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
-			d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
-			d3.select("#slider-investment").property("value", data[1].investments[0].amount);
-			d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
-			d3.select("#slider-optionpool").property("value", data[1].optionPoolPercent * 100);
-			d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent) );
+			function updatePreMoney() {
+				d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
+				d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
+			}
 
+			function updateInvestment() {
+				d3.select("#slider-investment").property("value", data[1].investments[0].amount);
+				d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+			}
+
+			function updateOptionPool() {
+				d3.select("#slider-optionpool").property("value", data[1].optionPoolPercent * 100);
+				d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent) );
+			}
+
+			function updateOptionPoolOrigin() {
+				d3.select("#slider-optionpoolorigin").property("value", data[1].optionPoolPreMoney == 't' ? 0 : 1);
+			}
 
 			function segColor(c) {
 				switch (c.name.toLowerCase()) {
-					case "founding":
+					case "founders":
 					color = "#541714";
 					break;
-					case "seed":
+					case "investors":
 					color = "#938172";
 					break;
-					case "series a":
+					case "option pool":
 					color = "#cc9e61";
 					break;
 					default:
@@ -209,17 +224,59 @@
 				return parseFloat(round.preMoneyValuation) + parseFloat(round.investments[0].amount);
 			}
 
-			function percentOwnership(c) {
+			function percentOwnershipPreMoney(c) {
 				percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
 				if (c.name == "Seed") {
 					return percentOwnershipSeed;
-					} else {
+				} else {
 					return (1.0 - percentOwnershipSeed);
 				}
 
 			}
 
-			function dashboard(id, fData){
+			function percentOwnershipOptionPool(c) {
+				base = percentOwnershipPreMoney(c);
+				optionPool = parseFloat(data[1].optionPoolPercent);
+				if (data[1].optionPoolPreMoney == 't' && c.name == "Founding") {
+					return Math.max(base - optionPool, 0.0);
+				}
+				if (data[1].optionPoolPreMoney == 'f') {
+					return Math.max(base - (optionPool / 2.0), 0.0);
+				}
+				return base;
+			}
+
+			function calcPreMoneyOwnerships(data) {
+				return [
+					{
+						"name": data[0].investments[0].name,
+						"percent": percentOwnershipPreMoney(data[0])
+					},
+					{
+						"name": data[1].investments[0].name,
+						"percent": percentOwnershipPreMoney(data[1])
+					}
+				];
+			}
+
+			function calcOptionPoolOwnerships(data) {
+				return [
+					{
+						"name": data[0].investments[0].name,
+						"percent": percentOwnershipOptionPool(data[0])
+					},
+					{
+						"name": data[1].investments[0].name,
+						"percent": percentOwnershipOptionPool(data[1])
+					},
+					{
+						"name": "Option Pool",
+						"percent": data[1].optionPoolPercent
+					}
+				];
+			}
+
+			function createChart(id, fData){
 
 				// function to handle pieChart.
 				function pieChart(pD){
@@ -235,7 +292,7 @@
 					var arc = d3.svg.arc().outerRadius(pieDim.r - 10).innerRadius(0);
 
 					// create a function to compute the pie slice angles.
-					var pie = d3.layout.pie().sort(null).value(function(d) { return percentOwnership(d); });
+					var pie = d3.layout.pie().sort(null).value(function(d) { return d.percent; });
 
 					// Draw the pie slices.
 					piesvg.selectAll("path").data(pie(pD)).enter().append("path").attr("d", arc)
@@ -277,11 +334,11 @@
 
 					// create the third column for each segment.
 					tr.append("td").attr("class",'legendName')
-					.text(function(d){ return d.investments[0].name; });
+					.text(function(d){ return d.name; });
 
 					// create the fourth column for each segment.
 					tr.append("td").attr("class",'legendPerc')
-					.text(function(d){ return d3.format("%")(percentOwnership(d));});
+					.text(function(d){ return d3.format("%")(d.percent); });
 
 					// Utility function to be used to update the legend.
 					leg.update = function(nD){
@@ -289,47 +346,100 @@
 						var l = legend.select("tbody").selectAll("tr").data(nD);
 
 						// update the frequencies.
-						l.select(".legendFreq").text(function(d){ return d.investments[0].name; });
+						l.select(".legendFreq").text(function(d){ return d.name; });
 
 						// update the percentage column.
-						l.select(".legendPerc").text(function(d){ return d3.format("%")(percentOwnership(d));});        
+						l.select(".legendPerc").text(function(d){ return d3.format("%")(d.percent);});
 					}
 
 					function getLegend(d,aD){ // Utility function to compute percentage.
-						return d3.format("%")(percentOwnership(d)/d3.sum(aD.map(function(v){ return percentOwnership(d); })));
+						return d3.format("%")(d.percent/d3.sum(aD.map(function(v){ return d.percent; })));
 					}
 
 					return leg;
 				}
 
-				var pC = pieChart(data), // create the pie-chart.
-				leg= legend(data);  // create the legend.
-				d3.select("#slider-premoney")
-				.on("mousemove", function() {
-					data[1].preMoneyValuation = parseInt(this.value);
-					d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
-					pC.update(data);
-					leg.update(data);
-					d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
-				});
-				d3.select("#slider-investment")
-				.on("mousemove", function() {
-					data[1].investments[0].amount = parseInt(this.value);
-					d3.select("#slider-investment").property("value", data[1].investments[0].amount);
-					pC.update(data);
-					leg.update(data);
-					d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
-				});
-				d3.select("#slider-optionpool")
-				.on("mousemove", function() {
-					data[1].optionPoolPercent = parseInt(this.value) / 100.0;
-					d3.select("#slider-optionpool").property("value", data[1].optionPoolPrecent);
-					d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent));
-				});
-
-
+				return [ pieChart(fData), legend(fData) ];
 			}
-			dashboard('#dashboard', data);
+
+			var preMoneyCharts = createChart('#premoney-chart', calcPreMoneyOwnerships(data));
+			var optionPoolCharts = createChart('#optionpool-chart', calcOptionPoolOwnerships(data));
+
+			function updatePreMoneyCharts() {
+				d = calcPreMoneyOwnerships(data);
+				for (i = 0; i < preMoneyCharts.length; i++) {
+					preMoneyCharts[i].update(d);
+				}
+			}
+			function updateOptionPoolCharts(charts) {
+				d = calcOptionPoolOwnerships(data);
+				for (i = 0; i < optionPoolCharts.length; i++) {
+					optionPoolCharts[i].update(d);
+				}
+			}
+			updatePreMoney();
+			updateInvestment();
+			updateOptionPool();
+			updateOptionPoolOrigin();
+
+			function updateOnPreMoneyChange(value) {
+				data[1].preMoneyValuation = parseInt(value);
+				updatePreMoney();
+				updatePreMoneyCharts();
+				updateOptionPoolCharts();
+			}
+			d3.select("#slider-premoney")
+			.on("mousemove", function() {
+				updateOnPreMoneyChange(this.value);
+			});
+			d3.select("#slider-premoney")
+			.on("click", function() {
+				updateOnPreMoneyChange(this.value);
+			});
+
+			function updateOnInvestmentChange(value) {
+				data[1].investments[0].amount = parseInt(value);
+				updateInvestment();
+				updatePreMoneyCharts();
+				updateOptionPoolCharts();
+			}
+			d3.select("#slider-investment")
+			.on("mousemove", function() {
+				updateOnInvestmentChange(this.value);
+			});
+			d3.select("#slider-investment")
+			.on("click", function() {
+				updateOnInvestmentChange(this.value);
+			});
+
+			function updateOnOptionPoolChange(value) {
+				data[1].optionPoolPercent = parseInt(value) / 100.0;
+				updateOptionPool();
+				updateOptionPoolCharts();
+			}
+			d3.select("#slider-optionpool")
+			.on("mousemove", function() {
+				updateOnOptionPoolChange(this.value);
+			});
+			d3.select("#slider-optionpool")
+			.on("click", function() {
+				updateOnOptionPoolChange(this.value);
+			});
+
+			function updateOnOptionPoolOriginChange(value) {
+				data[1].optionPoolPreMoney = (parseInt(value) == 0 ? 't' : 'f');
+				updateOptionPoolOrigin();
+				updateOptionPoolCharts();
+			}
+			d3.select("#slider-optionpoolorigin")
+			.on("mousemove", function() {
+				updateOnOptionPoolOriginChange(this.value);
+			});
+			d3.select("#slider-optionpoolorigin")
+			.on("click", function() {
+				updateOnOptionPoolOriginChange(this.value);
+			});
+
 		</script>
 	</body>
 </html>
