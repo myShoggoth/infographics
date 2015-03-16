@@ -20,8 +20,12 @@
 				color: #cc9e61;
 			}
 
-			p {
+			p, div.p {
 				text-indent: 1em;
+			}
+
+			div.p {
+				margin: 24px 0px;
 			}
 
 			p strong {
@@ -32,9 +36,12 @@
 				text-align: center;
 			}
 
-			.valuecontrol {
+			.valuecontrolvertical {
 				width: 280px;
-				text-align: center;
+			}
+
+			.valuecontrol {
+				text-indent: 0px;
 				display: inline-block;
 				border: medium ridge #626266;
 				border-radius: 6px;
@@ -45,6 +52,18 @@
 			.valuecontrol .title {
 				padding: 0.5em 0.5em 0 0.5em;
 				font-weight: bold;
+			}
+
+			.valuecontrol .inlinetitle {
+				display: inline-block;
+			}
+
+			.valuecontrol .inlinetitle:first-child {
+				padding: 0.5em 0em 0.5em 0.5em;
+			}
+
+			.valuecontrol .inlinetitle:last-child {
+				padding: 0.5em 0.5em 0.5em 0em;
 			}
 
 			.valuecontrol .value {
@@ -108,7 +127,7 @@
 
 		<p>Founders own 100% of a company until they raise money. You then have two levers to determine ownership after the investment.</p>
 		<div class="controls">
-			<div class="valuecontrol">
+			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
 					Pre-Money Valuation
 				</div>
@@ -118,7 +137,7 @@
 				<div class="value" id="premoney"></div>
 			</div>
 			<span class="and">and</span>
-			<div class="valuecontrol">
+			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
 					Investment Size
 				</div>
@@ -132,7 +151,7 @@
 		<p>Stock options are created from the <strong>Option Pool</strong>, shares set aside by the company to attract and retain key employees.</p>
 		<p>The size of the <strong>Option Pool</strong> is often specified as a percentage of total shares.</p>
 		<div class="controls">
-			<div class="valuecontrol">
+			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
 					Option Pool
 				</div>
@@ -142,7 +161,7 @@
 				<div class="value" id="optionpool"></div>
 			</div>	
 		</div>
-		<p>It can be created from either the <strong>Pre-Money</strong><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><strong>Post-Money</strong> side.</p>
+		<div class="p">It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side.</div>
 		<div id="optionpool-chart" class="chart"></div>
 		<script>
 			var data = [
