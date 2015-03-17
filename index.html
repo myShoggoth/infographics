@@ -21,8 +21,15 @@
 				font-weight: 900;
 			}
 
-			p, div.p {
+			p:not(:first-of-type), div.p {
 				text-indent: 1em;
+			}
+
+			p:first-of-type:first-letter {
+				float:left;
+				color: #541714;
+				font-size: 3em;
+				line-height: 3em;
 			}
 
 			div.p {
