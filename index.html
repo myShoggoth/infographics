@@ -241,7 +241,14 @@
 					<input type="range" name="points" min="0" max="10" step="0.5" value="0" id="slider-liqpref" style="width: 100%;">
 				</div>
 				<div class="value" id="liqpref"></div>
-			</div>, which determines how much of that investor's investment is returned to them before others (besides debt) get any.
+			</div>, which determines how much of that investor's investment is returned to them before others (besides debt) get any. Depending on whether the round's <strong>Stock Type</strong> is <div class="valuecontrol"><div class="inlinetitle">Convertible</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-convpart" style="width: 60px;"><div class="inlinetitle">Participating</div></div> Preferred, the investors will take either the <strong>Liquidation Preference</strong> or their normal share for <strong>Convertible Preferred</strong>, or both for <strong>Participating Preferred</strong> (known as a <strong>Double Dip</strong>). This can be alleviated with a
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Liquidation Cap</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20" step="1" value="0" id="slider-liqcap" style="width: 100%;">
+				</div>
+				<div class="value" id="liqcap"></div>
+			</div>, which caps the amount the investor can received due to <strong>Liquidation Preference</strong>.
 		</div>
 		<div id="liqpref-chart" class="chart"></div>
 		<script>
@@ -255,7 +262,6 @@
 				"optionPoolPreMoney": 't',
 				"dividendCompounding": 't',
 				"liquidationPref": "0.0",
-				"dividendYield": "0.0",
 				"liquidationCap": "0.0",
 				"investments": [
 				{
@@ -273,7 +279,6 @@
 				"optionPoolPreMoney": 't',
 				"dividendCompounding": 't',
 				"liquidationPref": "0.0",
-				"dividendYield": "0.0",
 				"liquidationCap": "0.0",
 				"investments": [
 				{
@@ -294,8 +299,7 @@
 				"optionPoolPreMoney": 't',
 				"dividendCompounding": 't',
 				"liquidationPref": "2.0",
-				"dividendYield": "10.0",
-				"liquidationCap": "5.0",
+				"liquidationCap": "0.0",
 				"investments": [
 				{
 					"name": "Investors",
@@ -342,6 +346,15 @@
 			function updateLiqPref() {
 				d3.select("#slider-liqpref").property("value", data[2].liquidationPref);
 				d3.select("#liqpref").text(data[2].liquidationPref + "x");
+			}
+
+			function updateLiqCap() {
+				d3.select("#slider-liqcap").property("value", data[2].liquidationCap);
+				d3.select("#liqcap").text(data[2].liquidationCap + "x");
+			}
+
+			function updateConvPart() {
+				d3.select("#slider-convpart").property("value", data[2].stockType == "Convertible Preferred" ? 0 : 1);
 			}
 
 			function segColor(c) {
@@ -591,6 +604,8 @@
 				angels = percentOwnershipDebt(data[1]);
 				investors = percentOwnershipDebt(data[2]);
 				options = parseFloat(data[2].optionPoolPercent);
+				nonInvestors = angels + options + founders;
+				convertible = data[2].stockType == "Convertible Preferred";
 
 				for (i = 100000; i < 100000000; i += 100000) {
 					amount = i;
@@ -600,11 +615,24 @@
 						amountAngels = 0.0;
 						amountOptions = 0.0;
 					} else {
-						amountAfterPref = i - liqPrefAmount;
-						amountFounders = amountAfterPref * founders;
-						amountAngels = amountAfterPref * angels;
-						amountOptions = amountAfterPref * options;
-						amountInvestors = amountAfterPref * investors + liqPrefAmount;
+						if (convertible && i <= liqPrefAmount / investors) {
+							amountInvestors = liqPrefAmount;
+							amountAfterPref = amount - liqPrefAmount;
+							amountFounders = amountAfterPref * (founders / nonInvestors);
+							amountAngels = amountAfterPref * (angels / nonInvestors);
+							amountOptions = amountAfterPref * (options / nonInvestors);
+						} else {
+							if (convertible && (amount * investors) >= liqPrefAmount) {
+								amountInvestors = amount * investors;
+								amountAfterPref = amount;
+							} else {
+								amountAfterPref = amount - liqPrefAmount;
+								amountInvestors = amountAfterPref * investors + liqPrefAmount;
+							}
+							amountFounders = amountAfterPref * founders;
+							amountAngels = amountAfterPref * angels;
+							amountOptions = amountAfterPref * options;
+						}
 					}
 					foundersPercent = amountFounders / amount;
 					angelsPercent = amountAngels / amount;
@@ -741,6 +769,8 @@
 			updateDebtDiscount();
 			updateDebtCap();
 			updateLiqPref();
+			updateLiqCap();
+			updateConvPart();
 
 			function updateOnPreMoneyChange(value) {
 				data[2].preMoneyValuation = parseInt(value);
@@ -866,6 +896,36 @@
 			.on("click", function() {
 				updateOnLiqPrefChange(this.value);
 			});
+
+			function updateOnLiqCapChange(value) {
+				data[2].liquidationCap = parseFloat(value);
+				updateLiqCap();
+				updateLiqPrefCharts();
+			}
+			d3.select("#slider-liqcap")
+			.on("mousemove", function() {
+				updateOnLiqCapChange(this.value);
+			});
+			d3.select("#slider-liqcap")
+			.on("click", function() {
+				updateOnLiqCapChange(this.value);
+			});
+
+			function updateOnConvPartChange(value) {
+				data[2].stockType = parseInt(value) == 0 ? "Convertible Preferred" : "Participating Preferred";
+				updateConvPart();
+				updateLiqPrefCharts();
+			}
+			d3.select("#slider-convpart")
+			.on("mousemove", function() {
+				updateOnConvPartChange(this.value);
+			});
+			d3.select("#slider-convpart")
+			.on("click", function() {
+				updateOnConvPartChange(this.value);
+			});
+
+
 		</script>
 	</body>
 </html>
