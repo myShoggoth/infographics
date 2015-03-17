@@ -1,7 +1,8 @@
-<!-- index.html -->
+<!DOCTYPE HTML>
 <html>
 	<head>
 		<title>How Startup Financing Works</title>
+		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
 			body {
@@ -200,19 +201,12 @@
 			is often specified as a percentage of total shares.</div>
 		<div class="p">It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side.</div>
 		<div id="optionpool-chart" class="chart"></div>
-		<div class="p">A popular way to do early financing is through
-			<div class="valuecontrol valuecontrolvertical">
-				<div class="title">Convertible Debt</div>
-				<div class="control">
-					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debt" style="width: 100%;">
-				</div>
-				<div class="value" id="debt"></div>
-			</div>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>, which must take place before the <strong>Term</strong> is up (or the debt must be renegotiated) to avoid having to <strong>pay it back to the investor</strong>, often with a <strong>Dividend</strong>.</div>
+		<div class="p">A popular way to do early financing is through <strong>Convertible Debt</strong>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>, which must take place before the <strong>Term</strong> is up (or the debt must be renegotiated) to avoid having to <strong>pay it back to the investor</strong>, often with a <strong>Dividend</strong>.</div>
 		<div class="p">To compensate the (usually) <strong>Angel Investors</strong> for taking the risk of lending their money to the company at an unknown <strong>Valuation</strong>, they normally ask for a
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Discount</div>
 				<div class="control">
-					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-debtdiscount" style="width: 100%;">
+					<input type="range" name="points" min="0" max="99" step="1" value="0" id="slider-debtdiscount" style="width: 100%;">
 				</div>
 				<div class="value" id="debtdiscount"></div>
 			</div>
@@ -223,7 +217,15 @@
 					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debtcap" style="width: 100%;">
 				</div>
 				<div class="value" id="debtcap"></div>
-			</div>, which does not affect other investors for that <strong>Financing Round</strong>. The <strong>Debt</strong> converts into the same type of stock as the next round of financing, with the same terms.
+			</div>, which does not affect other investors for that <strong>Financing Round</strong>. The 
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Convertible Debt</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debt" style="width: 100%;">
+				</div>
+				<div class="value" id="debt"></div>
+		</div>
+			converts into the same type of stock as the next round of financing, with the same terms.
 		</div>
 		<div id="debt-chart" class="chart"></div>
 		<script>
@@ -317,8 +319,8 @@
 			}
 
 			function updateDebtCap() {
-				d3.select("#slider-debtCap").property("value", data[1].investments[0].cap);
-				d3.select("#debtCap").text("$" + d3.format(",")(data[1].investments[0].cap) );
+				d3.select("#slider-debtcap").property("value", data[1].investments[0].cap);
+				d3.select("#debtcap").text("$" + d3.format(",")(data[1].investments[0].cap) );
 			}
 
 			function segColor(c) {
@@ -368,28 +370,29 @@
 			function percentOwnershipDebt(c) {
 				if (data[1].investments[0].cap > 0)
 				{
-					effectivePreMoney = Math.min(parseInt(data[2].preMoneyValuation), parseInt(data[1].investments[0].cap));
+					effectivePreMoney = Math.min(parseFloat(data[2].preMoneyValuation), parseFloat(data[1].investments[0].cap));
 				} else {
 					effectivePreMoney = data[2].preMoneyValuation;
 				}
-				effectiveDebtAmount = parseInt(data[1].investments[0].amount) / (1.0 - parseFloat(data[1].investments[0].discount));
-				effectiveDebtAmount = (parseInt(data[2].preMoneyValuation) / effectivePreMoney) * effectiveDebtAmount;
+				effectiveDebtAmount = parseFloat(data[1].investments[0].amount) / (1.0 - parseFloat(data[1].investments[0].discount));
+				effectiveDebtAmount = (parseFloat(data[2].preMoneyValuation) / effectivePreMoney) * effectiveDebtAmount;
 				totalShares = parseInt(data[0].investments[0].shares);
-				postMoney = effectiveDebtAmount + parseInt(data[2].investments[0].amount) + parseInt(data[2].preMoneyValuation);
+				postMoney = effectiveDebtAmount + parseFloat(data[2].investments[0].amount) + parseFloat(data[2].preMoneyValuation);
+				optionPool = parseFloat(data[2].optionPoolPercent);
 				if (data[2].optionPoolPreMoney == 't') {
-					totalInvestorsChunk = (effectiveDebtAmount + parseInt(data[2].investments[0].amount)) / postMoney;
-					investorPercent = parseInt(data[2].investments[0].amount) / postMoney;
-					debtPercent = effectiveDebtAmount / postMoney;
-					founderPercent = (1.0 - (totalInvestorsChunk + parseFloat(data[2].optionPoolPercent)));
+					totalInvestorsChunk = (effectiveDebtAmount + parseFloat(data[2].investments[0].amount)) / postMoney;
+					investorPercent = Math.min(parseFloat(data[2].investments[0].amount) / postMoney, 1.0 - optionPool);
+					debtPercent = Math.min(effectiveDebtAmount / postMoney, 1.0 - optionPool);
+					founderPercent = Math.max(1.0 - (totalInvestorsChunk + optionPool), 0);
 				} else {
 					totalPreShares = totalShares;
-					effectivePps = parseInt(data[2].preMoneyValuation) / totalPreShares;
+					effectivePps = parseFloat(data[2].preMoneyValuation) / totalPreShares;
 					debtShares = effectiveDebtAmount / effectivePps;
-					investorShares = parseInt(data[2].investments[0].amount) / effectivePps;
+					investorShares = parseFloat(data[2].investments[0].amount) / effectivePps;
 					totalPostShares = totalShares + investorShares + debtShares;
-					founderPercent = totalShares / totalPostShares;
-					debtPercent = debtShares / totalPostShares;
-					investorPercent = investorShares / totalPostShares;
+					founderPercent = Math.min(totalShares / totalPostShares, 1.0 - optionPool);
+					debtPercent = Math.min(debtShares / totalPostShares, 1.0 - optionPool);
+					investorPercent = Math.min(investorShares / totalPostShares, 1.0 - optionPool);
 				}
 				switch (c.name) {
 					case 'Founding':
@@ -667,7 +670,7 @@
 			.on("mousemove", function() {
 				updateOnDebtCapChange(this.value);
 			});
-			d3.select("#slider-debtterm")
+			d3.select("#slider-debtcap")
 			.on("click", function() {
 				updateOnDebtCapChange(this.value);
 			});
