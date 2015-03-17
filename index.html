@@ -151,8 +151,7 @@
 		</div>
 		<div id="premoney-chart" class="chart"></div>
 		<p>Stock options are created from the <strong>Option Pool</strong>, shares set aside by the company to attract and retain key employees.</p>
-		<p>The size of the <strong>Option Pool</strong> is often specified as a percentage of total shares.</p>
-		<div class="controls">
+		<div class="p">The size of the
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
 					Option Pool
@@ -162,7 +161,7 @@
 				</div>
 				<div class="value" id="optionpool"></div>
 			</div>	
-		</div>
+			is often specified as a percentage of total shares.</div>
 		<div class="p">It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side.</div>
 		<div id="optionpool-chart" class="chart"></div>
 		<div class="p">A popular way to do early financing is through
@@ -331,7 +330,12 @@
 			}
 
 			function percentOwnershipDebt(c) {
-				effectivePreMoney = Math.min(parseInt(data[2].preMoneyValuation), parseInt(data[1].investments[0].cap));
+				if (data[1].investments[0].cap > 0)
+				{
+					effectivePreMoney = Math.min(parseInt(data[2].preMoneyValuation), parseInt(data[1].investments[0].cap));
+				} else {
+					effectivePreMoney = data[2].preMoneyValuation;
+				}
 				effectiveDebtAmount = parseInt(data[1].investments[0].amount) / (1.0 - parseFloat(data[1].investments[0].discount));
 				effectiveDebtAmount = (parseInt(data[2].preMoneyValuation) / effectivePreMoney) * effectiveDebtAmount;
 				totalShares = parseInt(data[0].investments[0].shares);
