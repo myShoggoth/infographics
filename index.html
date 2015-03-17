@@ -156,6 +156,11 @@
 			.gravatar {
 				vertical-align: middle;
 			}
+
+			.areaText {
+				color: white;
+				text-size: smaller;
+			}
 		</style>
 	</head>
 	<body>
@@ -228,6 +233,17 @@
 			converts into the same type of stock as the next round of financing, with the same terms.
 		</div>
 		<div id="debt-chart" class="chart"></div>
+		<div class="p">
+			There are financing terms that only affect who gets how much money at an <strong>Exit</strong>. The first is
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Liquidation Preference</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="10" step="0.5" value="0" id="slider-liqpref" style="width: 100%;">
+				</div>
+				<div class="value" id="liqpref"></div>
+			</div>, which determines how much of that investor's investment is returned to them before others (besides debt) get any.
+		</div>
+		<div id="liqpref-chart" class="chart"></div>
 		<script>
 			var data = [
 			{
@@ -321,6 +337,11 @@
 			function updateDebtCap() {
 				d3.select("#slider-debtcap").property("value", data[1].investments[0].cap);
 				d3.select("#debtcap").text("$" + d3.format(",")(data[1].investments[0].cap) );
+			}
+
+			function updateLiqPref() {
+				d3.select("#slider-liqpref").property("value", data[2].liquidationPref);
+				d3.select("#liqpref").text(data[2].liquidationPref + "x");
 			}
 
 			function segColor(c) {
@@ -455,7 +476,7 @@
 				];
 			}
 
-			function createChart(id, fData){
+			function createPieChart(id, fData){
 
 				// function to handle pieChart.
 				function pieChart(pD){
@@ -541,9 +562,146 @@
 				return [ pieChart(fData), legend(fData) ];
 			}
 
-			var preMoneyCharts = createChart('#premoney-chart', calcPreMoneyOwnerships(data));
-			var optionPoolCharts = createChart('#optionpool-chart', calcOptionPoolOwnerships(data));
-			var debtCharts = createChart('#debt-chart', calcDebtOwnerships(data));
+			function calcLiqPrefOwnerships(data) {
+				dataFounders = {
+					"name": data[0].investments[0].name,
+					"color": segColor(data[0].investments[0]),
+					"values": []
+				};
+				dataAngels = {
+					"name": data[1].investments[0].name,
+					"color": segColor(data[1].investments[0]),
+					"values": []
+				};
+				dataOptions = {
+					"name": "Option Pool",
+					"color": segColor({ "name": "Option Pool" }),
+					"values": []
+				};
+				dataInvestors = {
+					"name": data[2].investments[0].name,
+					"color": segColor(data[2].investments[0]),
+					"values": []
+				};
+
+				investorAmount = parseFloat(data[2].investments[0].amount);
+				liqPref = parseFloat(data[2].liquidationPref);
+				liqPrefAmount = investorAmount * liqPref;
+				founders = percentOwnershipDebt(data[0]);
+				angels = percentOwnershipDebt(data[1]);
+				investors = percentOwnershipDebt(data[2]);
+				options = parseFloat(data[2].optionPoolPercent);
+
+				for (i = 100000; i < 100000000; i += 100000) {
+					amount = i;
+					if (i <= liqPrefAmount) {
+						amountInvestors = amount;
+						amountFounders = 0.0;
+						amountAngels = 0.0;
+						amountOptions = 0.0;
+					} else {
+						amountAfterPref = i - liqPrefAmount;
+						amountFounders = amountAfterPref * founders;
+						amountAngels = amountAfterPref * angels;
+						amountOptions = amountAfterPref * options;
+						amountInvestors = amountAfterPref * investors + liqPrefAmount;
+					}
+					foundersPercent = amountFounders / amount;
+					angelsPercent = amountAngels / amount;
+					investorsPercent = amountInvestors / amount;
+					optionsPercent = amountOptions / amount;
+					dataFounders.values.push( { exitAmount: i, y0: 0, y: foundersPercent });
+					dataAngels.values.push( { exitAmount: i, y0: foundersPercent, y: angelsPercent });
+					dataOptions.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent, y: optionsPercent });
+					dataInvestors.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent + optionsPercent, y: investorsPercent });
+				}
+				return [
+					dataFounders,
+					dataAngels,
+					dataOptions,
+					dataInvestors
+				];
+			}
+
+			function createAreaChart(id, fData) {
+				var margin = { top: 10, right: 40, bottom: 150, left: 60 },
+				width = 800 - margin.left - margin.right,
+				height = 500 - margin.top - margin.bottom,
+				contextHeight = 50;
+				contextWidth = width * 0.5;
+
+				var formatPercent = d3.format("%");
+
+				var x = d3.scale.linear()
+					.domain([100000, 100000000])
+					.range([0, width]);
+
+				var y = d3.scale.linear()
+					.range([height, 0]);
+
+				var xAxis = d3.svg.axis()
+					.scale(x)
+					.orient("bottom")
+					.tickFormat(function(d) { return "$" + d3.format(",")(d); });
+
+				var yAxis = d3.svg.axis()
+					.scale(y)
+					.orient("left")
+					.tickFormat(formatPercent);
+
+				var svg = d3.select(id)
+					.append("svg")
+					.attr("width", width + margin.left + margin.right)
+					.attr("height", height + margin.top + margin.bottom)
+					.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				var area = d3.svg.area()
+					.x(function(d) { return x(d.exitAmount); })
+					.y0(function(d) { return y(d.y0); })
+					.y1(function(d) { return y(d.y0 + d.y); })
+					.interpolate("basis");
+
+				var exitAmount = svg.selectAll(".exitAmount")
+					.data(fData)
+					.enter().append("g")
+					.attr("class", "exitAmount");
+
+				exitAmount.append("path")
+					.attr("class", "area")
+					.attr("d", function(d) { return area(d.values); })
+					.style("fill", function(d) { return d.color; });
+
+				exitAmount.append("text")
+					.datum(function(d) { return { name: d.name, value: d.values[d.values.length - 1]}; })
+					.attr("transform", function(d) { return "translate(" + x(d.value.exitAmount) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+					.attr("x", "-5em")
+					.attr("dy", ".35em")
+					.attr("class", "areaText")
+					.attr("font-size", "16")
+					.style("fill", function(d) { return "white"; })
+					.text(function(d) { return d.name; });
+
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis);
+
+				svg.append("g")
+					.attr("class", "y axis")
+					.call(yAxis);
+
+				area.update = function(nD){
+					svg.selectAll(".exitAmount").data(nD);
+				}
+
+				return [ area ];
+			}
+
+			var preMoneyCharts = createPieChart('#premoney-chart', calcPreMoneyOwnerships(data));
+			var optionPoolCharts = createPieChart('#optionpool-chart', calcOptionPoolOwnerships(data));
+			var debtCharts = createPieChart('#debt-chart', calcDebtOwnerships(data));
+			var liqPrefCharts = createAreaChart('#liqpref-chart', calcLiqPrefOwnerships(data));
 
 			function updatePreMoneyCharts() {
 				d = calcPreMoneyOwnerships(data);
@@ -563,6 +721,12 @@
 					debtCharts[i].update(d);
 				}
 			}
+			function updateLiqPrefCharts(charts) {
+				d = calcLiqPrefOwnerships(data);
+				for (i = 0; i < liqPrefCharts.length; i++) {
+					liqPrefCharts[i].update(d);
+				}
+			}
 			updatePreMoney();
 			updateInvestment();
 			updateOptionPool();
@@ -570,6 +734,7 @@
 			updateDebt();
 			updateDebtDiscount();
 			updateDebtCap();
+			updateLiqPref();
 
 			function updateOnPreMoneyChange(value) {
 				data[2].preMoneyValuation = parseInt(value);
@@ -577,6 +742,7 @@
 				updatePreMoneyCharts();
 				updateOptionPoolCharts();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-premoney")
 			.on("mousemove", function() {
@@ -593,6 +759,7 @@
 				updatePreMoneyCharts();
 				updateOptionPoolCharts();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-investment")
 			.on("mousemove", function() {
@@ -608,6 +775,7 @@
 				updateOptionPool();
 				updateOptionPoolCharts();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-optionpool")
 			.on("mousemove", function() {
@@ -623,6 +791,7 @@
 				updateOptionPoolOrigin();
 				updateOptionPoolCharts();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-optionpoolorigin")
 			.on("mousemove", function() {
@@ -637,6 +806,7 @@
 				data[1].investments[0].amount = parseInt(value);
 				updateDebt();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debt")
 			.on("mousemove", function() {
@@ -651,6 +821,7 @@
 				data[1].investments[0].discount = parseInt(value) / 100.0;
 				updateDebtDiscount();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debtdiscount")
 			.on("mousemove", function() {
@@ -665,6 +836,7 @@
 				data[1].investments[0].cap = parseInt(value);
 				updateDebtCap();
 				updateDebtCharts();
+				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debtcap")
 			.on("mousemove", function() {
@@ -673,6 +845,20 @@
 			d3.select("#slider-debtcap")
 			.on("click", function() {
 				updateOnDebtCapChange(this.value);
+			});
+
+			function updateOnLiqPrefChange(value) {
+				data[2].liquidationPref = parseFloat(value);
+				updateLiqPref();
+				updateLiqPrefCharts();
+			}
+			d3.select("#slider-liqpref")
+			.on("mousemove", function() {
+				updateOnLiqPrefChange(this.value);
+			});
+			d3.select("#slider-liqpref")
+			.on("click", function() {
+				updateOnLiqPrefChange(this.value);
 			});
 		</script>
 	</body>
