@@ -1,7 +1,7 @@
 <!-- index.html -->
 <html>
 	<head>
-		<title>Hello D3</title>
+		<title>How Startup Financing Works</title>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
 			body {
@@ -18,6 +18,7 @@
 			h1 .title {
 				font-size: 200%;
 				color: #cc9e61;
+				font-weight: 900;
 			}
 
 			p, div.p {
@@ -41,11 +42,13 @@
 			}
 
 			.valuecontrol {
+				text-align: center;
 				text-indent: 0px;
 				display: inline-block;
 				border-radius: 6px;
 				background-color: #938172;
 				color: #020304;
+				margin: 1px;
 			}
 
 			.valuecontrol .title {
@@ -58,15 +61,15 @@
 			}
 
 			.valuecontrol .inlinetitle:first-child {
-				padding: 0.5em 0em 0.5em 0.5em;
+				padding: 0.5em 0em 0.25em 0.5em;
 			}
 
 			.valuecontrol .inlinetitle:last-child {
-				padding: 0.5em 0.5em 0.5em 0em;
+				padding: 0.5em 0.5em 0.25em 0em;
 			}
 
 			.valuecontrol .value {
-				padding: 0em 0.5em 0.5em 0.5em;
+				padding: 0em 0.5em 0.25em 0.5em;
 			}
 
 			.valuecontrol .control {
@@ -162,6 +165,32 @@
 		</div>
 		<div class="p">It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side.</div>
 		<div id="optionpool-chart" class="chart"></div>
+		<div class="p">A popular way to do early financing is through
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Convertible Debt</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debt" style="width: 100%;">
+				</div>
+				<div class="value" id="debt"></div>
+			</div>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>, which must take place before the <strong>Term</strong> is up, or the debt must be renegotiated, to avoid having to <strong>pay it back to the investor</strong>, often with a <strong>Dividend</strong>.</div>
+		<div class="p">To compensate the (usually) <strong>Angel Investor</strong> for taking the risk of lending their money to the company at an unknown <strong>Valuation</strong>, they normally ask for a 
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Discount</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-debtdiscount" style="width: 100%;">
+				</div>
+				<div class="value" id="debtdiscount"></div>
+			</div>
+			to the next round's <strong>Share Price</strong>, and a <strong>Pre-Money Valuation</strong>
+			<div class="valuecontrol valuecontrolvertical">
+				<div class="title">Cap</div>
+				<div class="control">
+					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debtcap" style="width: 100%;">
+				</div>
+				<div class="value" id="debtcap"></div>
+			</div>, which does not affect other investors for that <strong>Financing Round</strong>. The <strong>Debt</strong> converts into the same type of stock as the next round of financing, with the same terms.
+		</div>
+		<div id="debt-chart" class="chart"></div>
 		<script>
 			var data = [
 			{
@@ -184,15 +213,36 @@
 			},
 			{
 				"name": "Seed",
-				"stockType": "Common",
-				"date": "02/01/2015",
-				"preMoneyValuation": "3000000",
-				"optionPoolPercent": "0.2",
+				"stockType": "Convertible Debt",
+				"date": "01/01/2015",
+				"preMoneyValuation": "0.0",
+				"optionPoolPercent": "0.0",
 				"optionPoolPreMoney": 't',
 				"dividendCompounding": 't',
 				"liquidationPref": "0.0",
 				"dividendYield": "0.0",
 				"liquidationCap": "0.0",
+				"investments": [
+				{
+					"name": "Angels",
+					"amount": "500000",
+					"term": "18",
+					"discount": "0.2",
+					"cap": "5000000"
+				}
+				]
+			},
+			{
+				"name": "Series A",
+				"stockType": "Convertible Preferred",
+				"date": "02/01/2015",
+				"preMoneyValuation": "3000000",
+				"optionPoolPercent": "0.1",
+				"optionPoolPreMoney": 't',
+				"dividendCompounding": 't',
+				"liquidationPref": "2.0",
+				"dividendYield": "10.0",
+				"liquidationCap": "5.0",
 				"investments": [
 				{
 					"name": "Investors",
@@ -203,22 +253,37 @@
 			];
 
 			function updatePreMoney() {
-				d3.select("#slider-premoney").property("value", data[1].preMoneyValuation);
-				d3.select("#premoney").text( "$" + d3.format(",")(data[1].preMoneyValuation) );
+				d3.select("#slider-premoney").property("value", data[2].preMoneyValuation);
+				d3.select("#premoney").text( "$" + d3.format(",")(data[2].preMoneyValuation) );
 			}
 
 			function updateInvestment() {
-				d3.select("#slider-investment").property("value", data[1].investments[0].amount);
-				d3.select("#investment").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+				d3.select("#slider-investment").property("value", data[2].investments[0].amount);
+				d3.select("#investment").text( "$" + d3.format(",")(data[2].investments[0].amount) );
 			}
 
 			function updateOptionPool() {
-				d3.select("#slider-optionpool").property("value", data[1].optionPoolPercent * 100);
-				d3.select("#optionpool").text(d3.format("%")(data[1].optionPoolPercent) );
+				d3.select("#slider-optionpool").property("value", data[2].optionPoolPercent * 100);
+				d3.select("#optionpool").text(d3.format("%")(data[2].optionPoolPercent) );
 			}
 
 			function updateOptionPoolOrigin() {
-				d3.select("#slider-optionpoolorigin").property("value", data[1].optionPoolPreMoney == 't' ? 0 : 1);
+				d3.select("#slider-optionpoolorigin").property("value", data[2].optionPoolPreMoney == 't' ? 0 : 1);
+			}
+
+			function updateDebt() {
+				d3.select("#slider-debt").property("value", data[1].investments[0].amount);
+				d3.select("#debt").text( "$" + d3.format(",")(data[1].investments[0].amount) );
+			}
+
+			function updateDebtDiscount() {
+				d3.select("#slider-debtdiscount").property("value", data[1].investments[0].discount * 100);
+				d3.select("#debtdiscount").text(d3.format("%")(data[1].investments[0].discount) );
+			}
+
+			function updateDebtCap() {
+				d3.select("#slider-debtCap").property("value", data[1].investments[0].cap);
+				d3.select("#debtCap").text("$" + d3.format(",")(data[1].investments[0].cap) );
 			}
 
 			function segColor(c) {
@@ -232,8 +297,9 @@
 					case "option pool":
 					color = "#cc9e61";
 					break;
-					default:
+					case "angels":
 					color = "#626266";
+					break;
 				}
 				return color;
 			}
@@ -243,25 +309,56 @@
 			}
 
 			function percentOwnershipPreMoney(c) {
-				percentOwnershipSeed = parseFloat(data[1].investments[0].amount) / postmoney(data[1])
-				if (c.name == "Seed") {
-					return percentOwnershipSeed;
+				percentOwnershipSeriesA = parseFloat(data[2].investments[0].amount) / postmoney(data[2])
+				if (c.name == "Series A") {
+					return percentOwnershipSeriesA;
 				} else {
-					return (1.0 - percentOwnershipSeed);
+					return (1.0 - percentOwnershipSeriesA);
 				}
 
 			}
 
 			function percentOwnershipOptionPool(c) {
 				base = percentOwnershipPreMoney(c);
-				optionPool = parseFloat(data[1].optionPoolPercent);
-				if (data[1].optionPoolPreMoney == 't' && c.name == "Founding") {
+				optionPool = parseFloat(data[2].optionPoolPercent);
+				if (data[2].optionPoolPreMoney == 't' && c.name == "Founding") {
 					return Math.max(base - optionPool, 0.0);
 				}
-				if (data[1].optionPoolPreMoney == 'f') {
+				if (data[2].optionPoolPreMoney == 'f') {
 					return Math.max(base - (optionPool / 2.0), 0.0);
 				}
 				return base;
+			}
+
+			function percentOwnershipDebt(c) {
+				effectivePreMoney = Math.min(parseInt(data[2].preMoneyValuation), parseInt(data[1].investments[0].cap));
+				effectiveDebtAmount = parseInt(data[1].investments[0].amount) / (1.0 - parseFloat(data[1].investments[0].discount));
+				effectiveDebtAmount = (parseInt(data[2].preMoneyValuation) / effectivePreMoney) * effectiveDebtAmount;
+				totalShares = parseInt(data[0].investments[0].shares);
+				postMoney = effectiveDebtAmount + parseInt(data[2].investments[0].amount) + parseInt(data[2].preMoneyValuation);
+				if (data[2].optionPoolPreMoney == 't') {
+					totalInvestorsChunk = (effectiveDebtAmount + parseInt(data[2].investments[0].amount)) / postMoney;
+					investorPercent = parseInt(data[2].investments[0].amount) / postMoney;
+					debtPercent = effectiveDebtAmount / postMoney;
+					founderPercent = (1.0 - (totalInvestorsChunk + parseFloat(data[2].optionPoolPercent)));
+				} else {
+					totalPreShares = totalShares;
+					effectivePps = parseInt(data[2].preMoneyValuation) / totalPreShares;
+					debtShares = effectiveDebtAmount / effectivePps;
+					investorShares = parseInt(data[2].investments[0].amount) / effectivePps;
+					totalPostShares = totalShares + investorShares + debtShares;
+					founderPercent = totalShares / totalPostShares;
+					debtPercent = debtShares / totalPostShares;
+					investorPercent = investorShares / totalPostShares;
+				}
+				switch (c.name) {
+					case 'Founding':
+						return founderPercent;
+					case 'Seed':
+						return debtPercent;
+					case 'Series A':
+						return investorPercent;
+				}
 			}
 
 			function calcPreMoneyOwnerships(data) {
@@ -271,8 +368,8 @@
 						"percent": percentOwnershipPreMoney(data[0])
 					},
 					{
-						"name": data[1].investments[0].name,
-						"percent": percentOwnershipPreMoney(data[1])
+						"name": data[2].investments[0].name,
+						"percent": percentOwnershipPreMoney(data[2])
 					}
 				];
 			}
@@ -284,12 +381,33 @@
 						"percent": percentOwnershipOptionPool(data[0])
 					},
 					{
-						"name": data[1].investments[0].name,
-						"percent": percentOwnershipOptionPool(data[1])
+						"name": data[2].investments[0].name,
+						"percent": percentOwnershipOptionPool(data[2])
 					},
 					{
 						"name": "Option Pool",
-						"percent": data[1].optionPoolPercent
+						"percent": data[2].optionPoolPercent
+					}
+				];
+			}
+
+			function calcDebtOwnerships(data) {
+				return [
+					{
+						"name": data[0].investments[0].name,
+						"percent": percentOwnershipDebt(data[0])
+					},
+					{
+						"name": data[2].investments[0].name,
+						"percent": percentOwnershipDebt(data[2])
+					},
+					{
+						"name": "Option Pool",
+						"percent": data[2].optionPoolPercent
+					},
+					{
+						"name": data[1].investments[0].name,
+						"percent": percentOwnershipDebt(data[1])
 					}
 				];
 			}
@@ -382,6 +500,7 @@
 
 			var preMoneyCharts = createChart('#premoney-chart', calcPreMoneyOwnerships(data));
 			var optionPoolCharts = createChart('#optionpool-chart', calcOptionPoolOwnerships(data));
+			var debtCharts = createChart('#debt-chart', calcDebtOwnerships(data));
 
 			function updatePreMoneyCharts() {
 				d = calcPreMoneyOwnerships(data);
@@ -395,16 +514,26 @@
 					optionPoolCharts[i].update(d);
 				}
 			}
+			function updateDebtCharts(charts) {
+				d = calcDebtOwnerships(data);
+				for (i = 0; i < debtCharts.length; i++) {
+					debtCharts[i].update(d);
+				}
+			}
 			updatePreMoney();
 			updateInvestment();
 			updateOptionPool();
 			updateOptionPoolOrigin();
+			updateDebt();
+			updateDebtDiscount();
+			updateDebtCap();
 
 			function updateOnPreMoneyChange(value) {
-				data[1].preMoneyValuation = parseInt(value);
+				data[2].preMoneyValuation = parseInt(value);
 				updatePreMoney();
 				updatePreMoneyCharts();
 				updateOptionPoolCharts();
+				updateDebtCharts();
 			}
 			d3.select("#slider-premoney")
 			.on("mousemove", function() {
@@ -416,10 +545,11 @@
 			});
 
 			function updateOnInvestmentChange(value) {
-				data[1].investments[0].amount = parseInt(value);
+				data[2].investments[0].amount = parseInt(value);
 				updateInvestment();
 				updatePreMoneyCharts();
 				updateOptionPoolCharts();
+				updateDebtCharts();
 			}
 			d3.select("#slider-investment")
 			.on("mousemove", function() {
@@ -431,9 +561,10 @@
 			});
 
 			function updateOnOptionPoolChange(value) {
-				data[1].optionPoolPercent = parseInt(value) / 100.0;
+				data[2].optionPoolPercent = parseInt(value) / 100.0;
 				updateOptionPool();
 				updateOptionPoolCharts();
+				updateDebtCharts();
 			}
 			d3.select("#slider-optionpool")
 			.on("mousemove", function() {
@@ -445,9 +576,10 @@
 			});
 
 			function updateOnOptionPoolOriginChange(value) {
-				data[1].optionPoolPreMoney = (parseInt(value) == 0 ? 't' : 'f');
+				data[2].optionPoolPreMoney = (parseInt(value) == 0 ? 't' : 'f');
 				updateOptionPoolOrigin();
 				updateOptionPoolCharts();
+				updateDebtCharts();
 			}
 			d3.select("#slider-optionpoolorigin")
 			.on("mousemove", function() {
@@ -458,6 +590,47 @@
 				updateOnOptionPoolOriginChange(this.value);
 			});
 
+			function updateOnDebtChange(value) {
+				data[1].investments[0].amount = parseInt(value);
+				updateDebt();
+				updateDebtCharts();
+			}
+			d3.select("#slider-debt")
+			.on("mousemove", function() {
+				updateOnDebtChange(this.value);
+			});
+			d3.select("#slider-debt")
+			.on("click", function() {
+				updateOnDebtChange(this.value);
+			});
+
+			function updateOnDebtDiscountChange(value) {
+				data[1].investments[0].discount = parseInt(value) / 100.0;
+				updateDebtDiscount();
+				updateDebtCharts();
+			}
+			d3.select("#slider-debtdiscount")
+			.on("mousemove", function() {
+				updateOnDebtDiscountChange(this.value);
+			});
+			d3.select("#slider-debtdiscount")
+			.on("click", function() {
+				updateOnDebtDiscountChange(this.value);
+			});
+
+			function updateOnDebtCapChange(value) {
+				data[1].investments[0].cap = parseInt(value);
+				updateDebtCap();
+				updateDebtCharts();
+			}
+			d3.select("#slider-debtcap")
+			.on("mousemove", function() {
+				updateOnDebtCapChange(this.value);
+			});
+			d3.select("#slider-debtterm")
+			.on("click", function() {
+				updateOnDebtCapChange(this.value);
+			});
 		</script>
 	</body>
 </html>
