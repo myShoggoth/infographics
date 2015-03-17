@@ -624,6 +624,8 @@
 			}
 
 			function createAreaChart(id, fData) {
+				var aC = {};
+
 				var margin = { top: 10, right: 40, bottom: 150, left: 60 },
 				width = 800 - margin.left - margin.right,
 				height = 500 - margin.top - margin.bottom,
@@ -673,8 +675,7 @@
 					.style("fill", function(d) { return d.color; });
 
 				exitAmount.append("text")
-					.datum(function(d) { return { name: d.name, value: d.values[d.values.length - 1]}; })
-					.attr("transform", function(d) { return "translate(" + x(d.value.exitAmount) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+					.attr("transform", function(d) { return "translate(" + x(d.values[d.values.length - 1].exitAmount) + "," + y(d.values[d.values.length - 1].y0 + d.values[d.values.length - 1].y / 2) + ")"; })
 					.attr("x", "-5em")
 					.attr("dy", ".35em")
 					.attr("class", "areaText")
@@ -691,11 +692,16 @@
 					.attr("class", "y axis")
 					.call(yAxis);
 
-				area.update = function(nD){
-					svg.selectAll(".exitAmount").data(nD);
+
+				// create function to update pie-chart. This will be used by histogram.
+				aC.update = function(nD){
+					svg.selectAll(".area").data(nD)
+						.attr("d", function(d) { return area(d.values); });
+					svg.selectAll("text.areaText").data(nD)
+						.attr("transform", function(d) { return "translate(" + x(d.values[d.values.length - 1].exitAmount) + "," + y(d.values[d.values.length - 1].y0 + d.values[d.values.length - 1].y / 2) + ")"; })
 				}
 
-				return [ area ];
+				return [ aC ];
 			}
 
 			var preMoneyCharts = createPieChart('#premoney-chart', calcPreMoneyOwnerships(data));
