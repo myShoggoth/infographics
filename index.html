@@ -248,7 +248,7 @@
 					<input type="range" name="points" min="0" max="20" step="1" value="0" id="slider-liqcap" style="width: 100%;">
 				</div>
 				<div class="value" id="liqcap"></div>
-			</div>, which caps the amount the investor can received due to <strong>Liquidation Preference</strong>.
+			</div>, which caps the amount the investor can received from the exit with an active <strong>Liquidation Preference</strong>.
 		</div>
 		<div id="liqpref-chart" class="chart"></div>
 		<script>
@@ -599,30 +599,40 @@
 
 				investorAmount = parseFloat(data[2].investments[0].amount);
 				liqPref = parseFloat(data[2].liquidationPref);
+				liqPrefCap = parseFloat(data[2].liquidationCap);
 				liqPrefAmount = investorAmount * liqPref;
+				liqPrefCapAmount = Math.max(investorAmount * liqPrefCap, liqPrefAmount);
 				founders = percentOwnershipDebt(data[0]);
 				angels = percentOwnershipDebt(data[1]);
 				investors = percentOwnershipDebt(data[2]);
 				options = parseFloat(data[2].optionPoolPercent);
 				nonInvestors = angels + options + founders;
 				convertible = data[2].stockType == "Convertible Preferred";
+				liqPrefCapMin = (liqPrefCapAmount - liqPrefAmount + (liqPrefAmount * investors)) / investors;
+				liqPrefCapMax = liqPrefCapAmount / investors;
 
 				for (i = 100000; i < 100000000; i += 100000) {
 					amount = i;
-					if (i <= liqPrefAmount) {
+					if (amount <= liqPrefAmount) {
 						amountInvestors = amount;
 						amountFounders = 0.0;
 						amountAngels = 0.0;
 						amountOptions = 0.0;
 					} else {
-						if (convertible && i <= liqPrefAmount / investors) {
+						if (!convertible && liqPref > 0 && liqPrefCap > 0 && amount >= liqPrefCapMin && amount <= liqPrefCapMax) {
+							amountInvestors = liqPrefCapAmount;
+							amountAfterPref = amount - liqPrefCapAmount;
+							amountFounders = amountAfterPref * (founders / nonInvestors);
+							amountAngels = amountAfterPref * (angels / nonInvestors);
+							amountOptions = amountAfterPref * (options / nonInvestors);
+						} else if (convertible && amount <= liqPrefAmount / investors) {
 							amountInvestors = liqPrefAmount;
 							amountAfterPref = amount - liqPrefAmount;
 							amountFounders = amountAfterPref * (founders / nonInvestors);
 							amountAngels = amountAfterPref * (angels / nonInvestors);
 							amountOptions = amountAfterPref * (options / nonInvestors);
 						} else {
-							if (convertible && (amount * investors) >= liqPrefAmount) {
+						if ((convertible && (amount * investors) >= liqPrefAmount) || (!convertible && liqPrefCap > 0 && amount > liqPrefCapMax)) {
 								amountInvestors = amount * investors;
 								amountAfterPref = amount;
 							} else {
@@ -638,10 +648,10 @@
 					angelsPercent = amountAngels / amount;
 					investorsPercent = amountInvestors / amount;
 					optionsPercent = amountOptions / amount;
-					dataFounders.values.push( { exitAmount: i, y0: 0, y: foundersPercent });
-					dataAngels.values.push( { exitAmount: i, y0: foundersPercent, y: angelsPercent });
-					dataOptions.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent, y: optionsPercent });
-					dataInvestors.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent + optionsPercent, y: investorsPercent });
+					dataFounders.values.push( { exitAmount: i, y0: 0, y: foundersPercent, amount: amountFounders });
+					dataAngels.values.push( { exitAmount: i, y0: foundersPercent, y: angelsPercent, amount: amountAngels });
+					dataOptions.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent, y: optionsPercent, amount: amountOptions});
+					dataInvestors.values.push( { exitAmount: i, y0: foundersPercent + angelsPercent + optionsPercent, y: investorsPercent, amount: amountInvestors, capamount: liqPrefCapAmount });
 				}
 				return [
 					dataFounders,
