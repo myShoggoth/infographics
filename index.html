@@ -170,6 +170,27 @@
 				color: white;
 				text-size: smaller;
 			}
+
+			.startupspotlogo {
+				vertical-align: middle;
+			}
+
+			.sponsors {
+				border-top: thin dashed gray;
+				border-bottom: thin dashed gray;
+				font-size: smaller;
+				text-align: center;
+			}
+
+			.license {
+				font-size: smaller;
+				padding: 2px 6px;
+				text-align: center;
+			}
+
+			.license img {
+				float: left;
+			}
 		</style>
 	</head>
 	<body>
@@ -261,6 +282,8 @@
 			</div>, which removes the <strong>Liquidation Preference</strong> once that investor reaches the cap.
 		</div>
 		<div id="liqpref-chart" class="chart"></div>
+		<div class="sponsors">Generously sponsored by <a href="http://www.causationlabs.com/">Causation Labs LLC</a> and <a href="https://www.startupspot.com/" title="Educating & Empowering Entrepreneurs"><img class="startupspotlogo" src="http://www.startupspot.com/wp-content/uploads/2012/07/sxs-sm.png" alt="StartupSpot"></a>.</div>
+		<div class="license"><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</div>
 		<script>
 			var data = [
 			{
@@ -675,7 +698,7 @@
 			function createAreaChart(id, fData) {
 				var aC = {};
 
-				var margin = { top: 10, right: 40, bottom: 150, left: 60 },
+				var margin = { top: 10, right: 40, bottom: 40, left: 60 },
 				width = 800 - margin.left - margin.right,
 				height = 500 - margin.top - margin.bottom,
 				contextHeight = 50;
