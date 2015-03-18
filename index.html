@@ -24,6 +24,15 @@
 				font-weight: 900;
 			}
 
+			h2 {
+				font-size: 200%;
+				color: #541714;
+				text-align: center;
+				font-variant: small-caps;
+				border-bottom: thin gray dashed;
+				border-top: thin gray dashed;
+			}
+
 			p:not(:first-of-type), div.p {
 				text-indent: 1em;
 			}
@@ -103,7 +112,7 @@
 			.and {
 				font-weight: bold;
 				margin: 0.5em;
-				color: #541714;
+				color: #cc9e61;
 			}
 
 			.chart {
@@ -169,7 +178,8 @@
 			by <img class="gravatar" src="https://secure.gravatar.com/avatar/b29a6f56dcf2607af909970c17fee58e?d=mm&amp;s=40" style="width: 40px; height: 40px;"><a href="http://www.myshoggoth.com/">Andrew Boardman</a>
 		</div>
 
-		<p>Founders own 100% of a company until they raise money. You then have two levers to determine ownership after the investment.</p>
+		<h2>Valuation</h2>
+		<p>Two levers to determine ownership after the investment.</p>
 		<div class="controls">
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
@@ -192,8 +202,8 @@
 			</div>
 		</div>
 		<div id="premoney-chart" class="chart"></div>
-		<p>Stock options are created from the <strong>Option Pool</strong>, shares set aside by the company to attract and retain key employees.</p>
-		<div class="p">The size of the
+		<h2>Stock Option Pool</h2>
+		<div class="p">Stock options are created from the
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
 					Option Pool
@@ -202,12 +212,11 @@
 					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-optionpool" style="width: 100%;">
 				</div>
 				<div class="value" id="optionpool"></div>
-			</div>	
-			is often specified as a percentage of total shares.</div>
-		<div class="p">It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side.</div>
+		</div>, shares set aside by the company to attract and retain key employees. It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side of the <strong>Financing Round</strong></div>
 		<div id="optionpool-chart" class="chart"></div>
-		<div class="p">A popular way to do early financing is through <strong>Convertible Debt</strong>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>, which must take place before the <strong>Term</strong> is up (or the debt must be renegotiated) to avoid having to <strong>pay it back to the investor</strong>, often with a <strong>Dividend</strong>.</div>
-		<div class="p">To compensate the (usually) <strong>Angel Investors</strong> for taking the risk of lending their money to the company at an unknown <strong>Valuation</strong>, they normally ask for a
+		<h2>Convertible Debt</h2>
+		<div class="p">A popular way to do early financing is through <strong>Convertible Debt</strong>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>.</div>
+		<div class="p">To reward <strong>Angel Investors</strong> for risking their money early at an unknown <strong>Valuation</strong>, they normally ask for a
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Discount</div>
 				<div class="control">
@@ -215,14 +224,14 @@
 				</div>
 				<div class="value" id="debtdiscount"></div>
 			</div>
-			to the next round's <strong>Share Price</strong>, and a <strong>Pre-Money</strong>
+			to the next round's <strong>Share Price</strong>, and/or a <strong>Pre-Money</strong>
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Valuation Cap</div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="20000000" step="100000" value="0" id="slider-debtcap" style="width: 100%;">
 				</div>
 				<div class="value" id="debtcap"></div>
-			</div>, which does not affect other investors for that <strong>Financing Round</strong>. The 
+			</div>. The 
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Convertible Debt</div>
 				<div class="control">
@@ -233,22 +242,23 @@
 			converts into the same type of stock as the next round of financing, with the same terms.
 		</div>
 		<div id="debt-chart" class="chart"></div>
+		<h2>Exit Terms</h2>
 		<div class="p">
-			There are financing terms that only affect who gets how much money at an <strong>Exit</strong>. The first is
+			The 
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Liquidation Preference</div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="10" step="0.5" value="0" id="slider-liqpref" style="width: 100%;">
 				</div>
 				<div class="value" id="liqpref"></div>
-			</div>, which determines how much of that investor's investment is returned to them before others (besides debt) get any. Depending on whether the round's <strong>Stock Type</strong> is <div class="valuecontrol"><div class="inlinetitle">Convertible</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-convpart" style="width: 60px;"><div class="inlinetitle">Participating</div></div> Preferred, the investors will take either the <strong>Liquidation Preference</strong> or their normal share for <strong>Convertible Preferred</strong>, or both for <strong>Participating Preferred</strong> (known as a <strong>Double Dip</strong>). This can be alleviated with a
+			</div> determines how much of that investor's investment is returned to them before others (except debt) get any. Depending on whether the round's <strong>Stock Type</strong> is <div class="valuecontrol"><div class="inlinetitle">Convertible</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-convpart" style="width: 60px;"><div class="inlinetitle">Participating</div></div> Preferred, the investors will take either the <strong>Liquidation Preference</strong> or their normal share for <strong>Convertible Preferred</strong>, or both for <strong>Participating Preferred</strong> (known as a <strong>Double Dip</strong>). This can be alleviated with a
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Liquidation Cap</div>
 				<div class="control">
 					<input type="range" name="points" min="0" max="20" step="1" value="0" id="slider-liqcap" style="width: 100%;">
 				</div>
 				<div class="value" id="liqcap"></div>
-			</div>, which caps the amount the investor can received from the exit with an active <strong>Liquidation Preference</strong>.
+			</div>, which removes the <strong>Liquidation Preference</strong> once that investor reaches the cap.
 		</div>
 		<div id="liqpref-chart" class="chart"></div>
 		<script>
