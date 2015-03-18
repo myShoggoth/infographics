@@ -423,7 +423,7 @@
 					effectivePps = parseFloat(data[2].preMoneyValuation) / totalPreShares;
 					debtShares = effectiveDebtAmount / effectivePps;
 					investorShares = parseFloat(data[2].investments[0].amount) / effectivePps;
-					totalPostShares = totalShares + investorShares + debtShares;
+					totalPostShares = (totalShares + investorShares + debtShares) / (1.0 - optionPool);
 					founderPercent = Math.min(totalShares / totalPostShares, 1.0 - optionPool);
 					debtPercent = Math.min(debtShares / totalPostShares, 1.0 - optionPool);
 					investorPercent = Math.min(investorShares / totalPostShares, 1.0 - optionPool);
@@ -611,8 +611,9 @@
 				liqPrefCapMin = (liqPrefCapAmount - liqPrefAmount + (liqPrefAmount * investors)) / investors;
 				liqPrefCapMax = liqPrefCapAmount / investors;
 
-				for (i = 100000; i < 100000000; i += 100000) {
+				for (i = 100000; i <= 100000000; i += 100000) {
 					amount = i;
+					amountAfterPref = amount;
 					if (amount <= liqPrefAmount) {
 						amountInvestors = amount;
 						amountFounders = 0.0;
@@ -632,7 +633,7 @@
 							amountAngels = amountAfterPref * (angels / nonInvestors);
 							amountOptions = amountAfterPref * (options / nonInvestors);
 						} else {
-						if ((convertible && (amount * investors) >= liqPrefAmount) || (!convertible && liqPrefCap > 0 && amount > liqPrefCapMax)) {
+							if ((convertible && (amount * investors) >= liqPrefAmount) || (!convertible && liqPrefCap > 0 && amount > liqPrefCapMax)) {
 								amountInvestors = amount * investors;
 								amountAfterPref = amount;
 							} else {
