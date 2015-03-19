@@ -6,7 +6,7 @@
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
 			body {
-				width: 800px;
+				width: 700px;
 				margin: 2em;
 				font-size: 150%;
 				color: #020304;
@@ -176,6 +176,7 @@
 			}
 
 			.sponsors {
+				margin-top: 20px;
 				border-top: thin dashed gray;
 				border-bottom: thin dashed gray;
 				font-size: smaller;
@@ -213,6 +214,14 @@
 
 			.active {
 				opacity: 1.0;
+			}
+
+			#liqpref-chart {
+				width: 600px;
+				height: 400px;
+				position: fixed;
+				top: 20px;
+				left: 800px;
 			}
 		</style>
 	</head>
@@ -735,8 +744,8 @@
 				var aC = {};
 
 				var margin = { top: 10, right: 40, bottom: 40, left: 60 },
-				width = 800 - margin.left - margin.right,
-				height = 500 - margin.top - margin.bottom,
+				width = 600 - margin.left - margin.right,
+				height = 400 - margin.top - margin.bottom,
 				contextHeight = 50;
 				contextWidth = width * 0.5;
 
@@ -752,6 +761,7 @@
 				var xAxis = d3.svg.axis()
 					.scale(x)
 					.orient("bottom")
+					.ticks(5)
 					.tickFormat(function(d) { return "$" + d3.format(",")(d); });
 
 				var yAxis = d3.svg.axis()
@@ -765,6 +775,20 @@
 					.attr("height", height + margin.top + margin.bottom)
 					.append("g")
 					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				svg.append("text")
+					.attr("x", width / 2)
+					.attr("y", height + margin.bottom)
+					.style("text-anchor", "middle")
+					.text("Exit Amount");
+
+				svg.append("text")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 0 - margin.left)
+					.attr("x", 0 - (height / 2))
+					.attr("dy", "1em")
+					.style("text-anchor", "middle")
+					.text("Percent of Exit Proceeds");
 
 				var area = d3.svg.area()
 					.x(function(d) { return x(d.exitAmount); })
