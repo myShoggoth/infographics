@@ -191,6 +191,29 @@
 			.license img {
 				float: left;
 			}
+
+			.convertible {
+				display: inline-block;
+				width: 45%;
+				vertical-align: top;
+				margin-left: 2%;
+				margin-right: 2%;
+				opacity: 0.4;
+			}
+
+			.participating {
+				display: inline-block;
+				width: 45%;
+				vertical-align: top;
+				padding-left: 2%;
+				margin-right: 2%;
+				opacity: 0.4;
+				border-left: thin gray solid;
+			}
+
+			.active {
+				opacity: 1.0;
+			}
 		</style>
 	</head>
 	<body>
@@ -200,7 +223,7 @@
 		</div>
 
 		<h2>Valuation</h2>
-		<p>Two levers to determine ownership after the investment.</p>
+		<p>There are two basic levers to determine ownership after the investment.</p>
 		<div class="controls">
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">
@@ -233,11 +256,11 @@
 					<input type="range" name="points" min="0" max="100" step="1" value="0" id="slider-optionpool" style="width: 100%;">
 				</div>
 				<div class="value" id="optionpool"></div>
-		</div>, shares set aside by the company to attract and retain key employees. It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side of the <strong>Financing Round</strong></div>
+		</div>, shares set aside by the company to attract and retain key employees. It can be created from either the <div class="valuecontrol"><div class="inlinetitle">Pre-Money</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-optionpoolorigin" style="width: 60px;"><div class="inlinetitle">Post-Money</div></div> side of the <strong>Financing Round</strong>.</div>
 		<div id="optionpool-chart" class="chart"></div>
 		<h2>Convertible Debt</h2>
-		<div class="p">A popular way to do early financing is through <strong>Convertible Debt</strong>, which allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>.</div>
-		<div class="p">To reward <strong>Angel Investors</strong> for risking their money early at an unknown <strong>Valuation</strong>, they normally ask for a
+		<div class="p"><strong>Convertible Debt</strong> is a popular way to do early financing. It allows the company to raise money while deferring the <strong>Valuation</strong> of the company until the next <strong>Financing Round</strong>.</div>
+		<div class="p">To reward the (usually) <strong>Angel Investors</strong> for risking their money early at an unknown <strong>Valuation</strong>, they normally ask for a
 			<div class="valuecontrol valuecontrolvertical">
 				<div class="title">Discount</div>
 				<div class="control">
@@ -272,14 +295,25 @@
 					<input type="range" name="points" min="0" max="10" step="0.5" value="0" id="slider-liqpref" style="width: 100%;">
 				</div>
 				<div class="value" id="liqpref"></div>
-			</div> determines how much of that investor's investment is returned to them before others (except debt) get any. Depending on whether the round's <strong>Stock Type</strong> is <div class="valuecontrol"><div class="inlinetitle">Convertible</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-convpart" style="width: 60px;"><div class="inlinetitle">Participating</div></div> Preferred, the investors will take either the <strong>Liquidation Preference</strong> or their normal share for <strong>Convertible Preferred</strong>, or both for <strong>Participating Preferred</strong> (known as a <strong>Double Dip</strong>). This can be alleviated with a
-			<div class="valuecontrol valuecontrolvertical">
-				<div class="title">Liquidation Cap</div>
-				<div class="control">
-					<input type="range" name="points" min="0" max="20" step="1" value="0" id="slider-liqcap" style="width: 100%;">
+	</div> determines how much of the investment is returned to the investor before others receive any money, based the round's <strong>Stock Type</strong>:</div>
+		<div class="controls"><div class="valuecontrol"><div class="inlinetitle">Convertible Preferred</div><input type="range" name="points" min="0" max="1" step="1" value="0" id="slider-convpart" style="width: 60px;"><div class="inlinetitle">Participating Preferred</div></div>
+	</div>
+
+		<div class="convertible">
+			<p>The shares are either converted into <strong>Common</strong>, or the investors take the amount they invested times the <strong>Liquidation Preference</strong>, whichever returns more money.</p>
+		</div>
+		<div class="participating">
+			<p>The shares are converted into <strong>Common</strong>, as well as the investors take the amount they invested times the <strong>Liquidation Preference</strong>.</p>
+			<div class="p">This is known as a <strong>Double Dip</strong>, and the effects are pronounced at lower exits. To reduce that impact, a
+				<div class="valuecontrol valuecontrolvertical">
+					<div class="title">Liquidation Cap</div>
+					<div class="control">
+						<input type="range" name="points" min="0" max="20" step="1" value="0" id="slider-liqcap" style="width: 100%;">
+					</div>
+					<div class="value" id="liqcap"></div>
 				</div>
-				<div class="value" id="liqcap"></div>
-			</div>, which removes the <strong>Liquidation Preference</strong> once that investor reaches the cap.
+			       can be applied, which removes the <strong>Liquidation Preference</strong> once that investor's returns reach the cap.
+			</div>
 		</div>
 		<div id="liqpref-chart" class="chart"></div>
 		<div class="sponsors">Generously sponsored by <a href="http://www.causationlabs.com/">Causation Labs LLC</a> and <a href="https://www.startupspot.com/" title="Educating & Empowering Entrepreneurs"><img class="startupspotlogo" src="http://www.startupspot.com/wp-content/uploads/2012/07/sxs-sm.png" alt="StartupSpot"></a>.</div>
@@ -388,6 +422,8 @@
 
 			function updateConvPart() {
 				d3.select("#slider-convpart").property("value", data[2].stockType == "Convertible Preferred" ? 0 : 1);
+				d3.select(".convertible").attr("class", data[2].stockType == "Convertible Preferred"? "active convertible" : "convertible");
+				d3.select(".participating").attr("class", data[2].stockType == "Convertible Preferred" ? "participating" : "active participating");
 			}
 
 			function segColor(c) {
