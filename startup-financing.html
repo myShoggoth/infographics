@@ -882,6 +882,14 @@
 			updateLiqCap();
 			updateConvPart();
 
+			function getEvent() {
+				if (/Trident/.test(navigator.userAgent) ||
+					/MSIE/.test(navigator.userAgent)) {
+					return 'change';
+				}
+				return "input";
+			}
+
 			function updateOnPreMoneyChange(value) {
 				data[2].preMoneyValuation = parseInt(value);
 				updatePreMoney();
@@ -891,7 +899,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-premoney")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnPreMoneyChange(this.value);
 			});
 
@@ -904,7 +912,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-investment")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnInvestmentChange(this.value);
 			});
 
@@ -916,7 +924,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-optionpool")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnOptionPoolChange(this.value);
 			});
 
@@ -928,7 +936,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-optionpoolorigin")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnOptionPoolOriginChange(this.value);
 			});
 
@@ -939,7 +947,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debt")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnDebtChange(this.value);
 			});
 
@@ -950,7 +958,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debtdiscount")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnDebtDiscountChange(this.value);
 			});
 
@@ -961,7 +969,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-debtcap")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnDebtCapChange(this.value);
 			});
 
@@ -971,7 +979,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-liqpref")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnLiqPrefChange(this.value);
 			});
 
@@ -981,7 +989,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-liqcap")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnLiqCapChange(this.value);
 			});
 
@@ -991,7 +999,7 @@
 				updateLiqPrefCharts();
 			}
 			d3.select("#slider-convpart")
-			.on("input", function() {
+			.on(getEvent(), function() {
 				updateOnConvPartChange(this.value);
 			});
 
