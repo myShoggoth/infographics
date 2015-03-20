@@ -6,10 +6,14 @@
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
 			body {
-				width: 700px;
+				width: 1300px;
 				margin: 2em;
 				font-size: 150%;
 				color: #020304;
+			}
+
+			.left {
+				width: 700px;
 			}
 
 			h1 {
@@ -226,6 +230,8 @@
 		</style>
 	</head>
 	<body>
+		<div id="liqpref-chart" class="chart"></div>
+		<div class="left">
 		<h1>How <span class="title">Startup Financing</span> Works</h1>
 		<div class="byline">
 			by <img class="gravatar" src="https://secure.gravatar.com/avatar/b29a6f56dcf2607af909970c17fee58e?d=mm&amp;s=40" style="width: 40px; height: 40px;"><a href="http://www.myshoggoth.com/">Andrew Boardman</a>
@@ -324,9 +330,9 @@
 			       can be applied, which removes the <strong>Liquidation Preference</strong> once that investor's returns reach the cap.
 			</div>
 		</div>
-		<div id="liqpref-chart" class="chart"></div>
 		<div class="sponsors">Generously sponsored by <a href="http://www.causationlabs.com/">Causation Labs LLC</a> and <a href="https://www.startupspot.com/" title="Educating & Empowering Entrepreneurs"><img class="startupspotlogo" src="http://www.startupspot.com/wp-content/uploads/2012/07/sxs-sm.png" alt="StartupSpot"></a>.</div>
 		<div class="license"><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</div>
+		</div>
 		<script>
 			var data = [
 			{
