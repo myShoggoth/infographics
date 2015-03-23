@@ -6,14 +6,10 @@
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<style>
 			body {
-				width: 1300px;
+				width: 700px;
 				margin: 2em;
 				font-size: 150%;
 				color: #020304;
-			}
-
-			.left {
-				width: 700px;
 			}
 
 			h1 {
@@ -195,6 +191,7 @@
 
 			.license img {
 				float: left;
+				margin-bottom: 450px;
 			}
 
 			.convertible {
@@ -220,18 +217,24 @@
 				opacity: 1.0;
 			}
 
-			#liqpref-chart {
-				width: 600px;
+			.floatingchart {
+				width: 700px;
 				height: 400px;
 				position: fixed;
-				top: 20px;
-				left: 800px;
+				bottom: 0;
+				left: 2em;
+				background-color: white;
+				border: thin gray solid;
+				opacity: 1;
+				z-index: 100;
 			}
 		</style>
 	</head>
 	<body>
-		<div id="liqpref-chart" class="chart"></div>
-		<div class="left">
+		<div class="floatingchart">
+			<div id="liqpref-chart" class="chart"></div>
+		</div>
+		<div>
 		<h1>How <span class="title">Startup Financing</span> Works</h1>
 		<div class="byline">
 			by <img class="gravatar" src="https://secure.gravatar.com/avatar/b29a6f56dcf2607af909970c17fee58e?d=mm&amp;s=40" style="width: 40px; height: 40px;"><a href="http://www.myshoggoth.com/">Andrew Boardman</a>
