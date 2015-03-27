@@ -12,6 +12,10 @@
 				color: #020304;
 			}
 
+			.left {
+				width: 700px;
+			}
+
 			h1 {
 				color: #541714;
 				text-align: center;
@@ -217,7 +221,7 @@
 				opacity: 1.0;
 			}
 
-			.floatingchart {
+			.bottom {
 				width: 700px;
 				height: 400px;
 				position: fixed;
@@ -228,13 +232,22 @@
 				opacity: 1;
 				z-index: 100;
 			}
+
+			.right {
+				width: 500px;
+				height: 400px;
+				position: fixed;
+				top: 20px;
+				left: 800px;
+			}
+
+			#exitpercent {
+				text-align: right;
+			}
 		</style>
 	</head>
 	<body>
-		<div class="floatingchart">
-			<div id="liqpref-chart" class="chart"></div>
-		</div>
-		<div>
+		<div class="left">
 		<h1>How <span class="title">Startup Financing</span> Works</h1>
 		<div class="byline">
 			by <img class="gravatar" src="https://secure.gravatar.com/avatar/b29a6f56dcf2607af909970c17fee58e?d=mm&amp;s=40" style="width: 40px; height: 40px;"><a href="http://www.myshoggoth.com/">Andrew Boardman</a>
@@ -332,6 +345,14 @@
 				</div>
 			       can be applied, which removes the <strong>Liquidation Preference</strong> once that investor's returns reach the cap.
 			</div>
+		</div>
+		<div id="exitpercent" class="inlinechart">
+			<select id="exitpercentdisplay">
+				<option value="inline">Default</option>
+				<option value="bottom">Always show - bottom</option>
+				<option value="right">Always show - right</option>
+			</select>
+			<div id="liqpref-chart" class="chart"></div>
 		</div>
 		<div class="sponsors">Generously sponsored by <a href="http://www.causationlabs.com/">Causation Labs LLC</a> and <a href="https://www.startupspot.com/" title="Educating & Empowering Entrepreneurs"><img class="startupspotlogo" src="http://www.startupspot.com/wp-content/uploads/2012/07/sxs-sm.png" alt="StartupSpot"></a>.</div>
 		<div class="license"><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</div>
@@ -1006,6 +1027,10 @@
 				updateOnConvPartChange(this.value);
 			});
 
+			d3.select("#exitpercentdisplay")
+			.on("change", function() {
+				d3.select("#exitpercent").attr("class", this.value);
+			});
 
 		</script>
 		<script>
