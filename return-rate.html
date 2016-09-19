@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Investor Required Returns</title>
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <style>
+      body {
+        width: 700px;
+        margin: 2em;
+        font-size: 150%;
+        color: #020304;
+      }
+
+      .left {
+        width: 700px;
+      }
+
+      h1 {
+        color: #541714;
+        text-align: center;
+        margin-bottom: 0px;
+      }
+
+      h1 .title {
+        font-size: 200%;
+        color: #cc9e61;
+        font-weight: 900;
+      }
+
+      h2 {
+        font-size: 200%;
+        color: #541714;
+        text-align: center;
+        font-variant: small-caps;
+        border-bottom: thin gray dashed;
+        border-top: thin gray dashed;
+      }
+
+      p:not(:first-of-type), div.p {
+        text-indent: 1em;
+      }
+
+      p:first-of-type:first-letter {
+        float:left;
+        color: #541714;
+        font-size: 3em;
+        line-height: 60px;
+      }
+
+      div.p {
+        margin: 24px 0px;
+      }
+
+      strong {
+        color: #cc9e61;
+      }
+
+      .controls {
+        text-align: center;
+      }
+
+      .valuecontrolvertical {
+        width: 280px;
+      }
+
+      .valuecontrol {
+        text-align: center;
+        text-indent: 0px;
+        display: inline-block;
+        border-radius: 6px;
+        background-color: #938172;
+        color: #020304;
+        margin: 1px;
+        vertical-align: middle;
+      }
+
+      .valuecontrol:hover {
+        opacity: 0.9;
+      }
+
+      .valuecontrol .title {
+        padding: 0.5em 0.5em 0 0.5em;
+        font-weight: bold;
+      }
+
+      .valuecontrol .inlinetitle {
+        display: inline-block;
+      }
+
+      .valuecontrol .inlinetitle:first-child {
+        padding: 0.5em 0em 0.25em 0.5em;
+      }
+
+      .valuecontrol .inlinetitle:last-child {
+        padding: 0.5em 0.5em 0.25em 0em;
+      }
+
+      .valuecontrol .value {
+        padding: 0em 0.5em 0.25em 0.5em;
+      }
+
+      .valuecontrol input {
+        vertical-align: middle;
+      }
+
+      .valuecontrol .control {
+        margin: 0px;
+        padding: 0px;
+      }
+
+      .valuecontrol .control input {
+        margin: 0px;
+        padding: 0px;
+      }
+      .and {
+        font-weight: bold;
+        margin: 0.5em;
+        color: #cc9e61;
+      }
+
+      .chart {
+        text-align: center;
+      }
+
+      path {  stroke: #fff; }
+      path:hover {  opacity:0.9; }
+      rect:hover {  fill:blue; }
+      .axis {  font: 10px sans-serif; }
+      .legend tr{    border-bottom:1px solid grey; }
+      .legend tr:first-child{    border-top:1px solid grey; }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .x.axis path {  display: none; }
+      .legend{
+        margin-bottom:76px;
+        display:inline-block;
+        border-collapse: collapse;
+        border-spacing: 0px;
+      }
+      .legend td{
+        padding:4px 5px;
+        vertical-align:bottom;
+      }
+      .legendFreq, .legendPerc{
+        align:right;
+        width:50px;
+      }
+
+      .byline {
+        text-align: right;
+        font-style: italic;
+        font-size: smaller;
+      }
+
+      .byline a {
+        text-decoration: none;
+        color: #cc9e61;
+        margin-left: 4px;
+        font-style: normal;
+      }
+
+      .gravatar {
+        vertical-align: middle;
+      }
+
+      .areaText {
+        color: white;
+        text-size: smaller;
+      }
+
+      .startupspotlogo {
+        vertical-align: middle;
+      }
+
+      .sponsors {
+        margin-top: 20px;
+        border-top: thin dashed gray;
+        border-bottom: thin dashed gray;
+        font-size: smaller;
+        text-align: center;
+      }
+
+      .license {
+        font-size: smaller;
+        padding: 2px 6px;
+        text-align: center;
+      }
+
+      .license img {
+        float: left;
+        margin-bottom: 450px;
+      }
+
+      .convertible {
+        display: inline-block;
+        width: 45%;
+        vertical-align: top;
+        margin-left: 2%;
+        margin-right: 2%;
+        opacity: 0.4;
+      }
+
+      .participating {
+        display: inline-block;
+        width: 45%;
+        vertical-align: top;
+        padding-left: 2%;
+        margin-right: 2%;
+        opacity: 0.4;
+        border-left: thin gray solid;
+      }
+
+      .active {
+        opacity: 1.0;
+      }
+
+      .bottom {
+        width: 700px;
+        height: 400px;
+        position: fixed;
+        bottom: 0;
+        left: 2em;
+        background-color: white;
+        border: thin gray solid;
+        opacity: 1;
+        z-index: 100;
+      }
+
+      .right {
+        width: 500px;
+        height: 400px;
+        position: fixed;
+        top: 20px;
+        left: 800px;
+      }
+
+      #exitpercent {
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="left">
+      <h1>How <span class="title">Investor Returns</span> Work</h1>
+      <div class="byline">
+        by <img class="gravatar" src="https://secure.gravatar.com/avatar/b29a6f56dcf2607af909970c17fee58e?d=mm&amp;s=40" style="width: 40px; height: 40px;"><a href="http://www.myshoggoth.com/">Andrew Boardman</a>
+      </div>
+      <h2>Interest Rate</h2>
+      <p>The most basic question for expected <strong>Investor Returns</strong> are the what 
+      <div class="valuecontrol valuecontrolvertical">
+        <div class="title">
+          Interest Rate
+        </div>
+        <div class="control">
+          <input type="range" name="points" min="0.0" max="1.0" step="0.01" value="0.10" id="slider-interestrate" style="width: 100%;">
+        </div>
+        <div class="value" id="interestrate"></div>
+      </div>
+      the investor considers to be a minimum amount for a successful investment. Due to <strong>Compounding Interest Rates</strong>, the amount that needs to be returned to the investor increases over time at an increasing rate.
+      </p>
+      <script>
+var data = [
+{
+  "name": "Founding",
+  "stockType": "Restricted",
+  "date": "01/01/2015",
+  "preMoneyValuation": "0.0",
+  "optionPoolPercent": "0.0",
+  "optionPoolPreMoney": 't',
+  "dividendCompounding": 't',
+  "liquidationPref": "0.0",
+  "liquidationCap": "0.0",
+  "investments": [
+  {
+    "name": "Founders",
+    "shares": "3000000"
+  }
+  ]
+},
+{
+  "name": "Seed",
+  "stockType": "Convertible Debt",
+  "date": "01/01/2015",
+  "preMoneyValuation": "0.0",
+  "optionPoolPercent": "0.0",
+  "optionPoolPreMoney": 't',
+  "dividendCompounding": 't',
+  "liquidationPref": "0.0",
+  "liquidationCap": "0.0",
+  "investments": [
+  {
+    "name": "Angels",
+    "amount": "500000",
+    "term": "18",
+    "discount": "0.2",
+    "cap": "5000000"
+  }
+  ]
+},
+{
+  "name": "Series A",
+  "stockType": "Convertible Preferred",
+  "date": "02/01/2016",
+  "preMoneyValuation": "3000000",
+  "optionPoolPercent": "0.1",
+  "optionPoolPreMoney": 't',
+  "dividendCompounding": 't',
+  "liquidationPref": "2.0",
+  "liquidationCap": "0.0",
+  "investments": [
+  {
+    "name": "VCs",
+    "amount": "2000000"
+  }
+  ]
+}
+];
+
+var margin = {top: 20, right: 100, bottom: 50, left: 100},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%x").parse;
+
+var interest_rate = 0.10;
+
+var x = d3.time.scale()
+  .range([0, width]);
+
+var y = d3.scale.linear()
+  .range([height, 0]);
+
+  var color = d3.scale.category20();
+
+  var xAxis = d3.svg.axis()
+.scale(x)
+  .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+.scale(y)
+  .orient("left")
+  //.tickFormat(formatPercent);
+
+var area = d3.svg.area()
+  .x(function(d) { return x(d.date); })
+  .y0(function(d) { return y(d.y0); })
+  .y1(function(d) { return y(d.y0 + d.y); });
+
+var stack = d3.layout.stack()
+  .values(function(d) { return d.values; });
+
+  var svg = d3.select("body").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  function npv(investment, rate, months, before) {
+    if (before)
+      return 0.0;
+    else
+      return investment * (Math.pow(1.0 + rate,  (months / 12.0) ));
+  }
+
+function calcIRRs(d) {
+  var years = 5;
+
+  theDate = parseDate(d[1].date);
+
+  var iRRdata = [];
+
+  iRRdata.push( { date: theDate, [d[1].name]: d[1].investments[0].amount, [d[2].name]: 0 });
+  for (i = 1; i < 5 * 12; i++) {
+    newDate = new Date(theDate.getTime());
+    newDate.setMonth(theDate.getMonth() + i);
+    iRRdata.push({ date: newDate, [d[1].name]: npv(d[1].investments[0].amount, interest_rate, i, false), [d[2].name]: npv(d[2].investments[0].amount, interest_rate, i, newDate < parseDate(d[2].date)) });
+  }
+  return iRRdata;
+}
+
+function createStackChart(d) {
+  var color = d3.scale.category20();
+  color.domain(d3.keys(d[0]).filter(function(key) { return key !== "date"; }));
+
+  var browsers = stack(color.domain().map(function(name) {
+    return {
+      name: name,
+      values: d.map(function(dd) {
+        return {date: dd.date, y: dd[name] * 1};
+      }),
+      color: segColor(name)
+    };
+  }));
+
+  // Find the value of the day with highest total value
+  var maxDateVal = d3.max(d, function(d){
+    var vals = d3.keys(d).map(function(key){ return key !== "date" ? d[key] : 0 });
+    return d3.sum(vals);
+  });
+
+  // Set domains for axes
+  x.domain(d3.extent(d, function(d) { return d.date; }));
+  y.domain([0, maxDateVal]);
+
+  var browser = svg.selectAll(".browser")
+    .data(browsers)
+    .enter().append("g")
+    .attr("class", "browser");
+
+  browser.append("path")
+    .attr("class", "area")
+    .attr("d", function(d) { return area(d.values); })
+    .style("fill", function(d) { return d.color; });
+
+  browser.append("text")
+    .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+    .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+    .attr("x", 0)
+    .attr("dy", ".35em")
+    .text(function(d) { return d.name; });
+
+  svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+  svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);
+
+  svg.update = function(nD) {
+    var browsers2 = stack(color.domain().map(function(name) {
+      return {
+        name: name,
+        values: nD.map(function(dd) {
+          return {date: dd.date, y: dd[name] * 1};
+        }),
+        color: segColor(name)
+      };
+    }));
+
+    // Find the value of the day with highest total value
+    var maxDateVal2 = d3.max(nD, function(d){
+      var vals = d3.keys(d).map(function(key){ return key !== "date" ? d[key] : 0 });
+      return d3.sum(vals);
+    });
+
+    // Set domains for axes
+    x.domain(d3.extent(nD, function(d) { return d.date; }));
+    y.domain([0, maxDateVal2]);
+    svg.selectAll(".browser")
+      .data(browsers2).attr("d", function(d) { return area(d.values); })
+      .style("fill", function(d) { return d.color; });
+    svg.selectAll(".browser")
+        .select("path")
+        .attr("class", "area")
+        .attr("d", function(d) { return area(d.values); })
+        .style("fill", function(d) { return d.color; });
+    svg.selectAll(".browser")
+        .select("text")
+        .datum(function(d) { return { name: d.name, value: d.values[d.values.length - 1]}; })
+        .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+        .attr("x", 0)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.name; });
+    d3.select("g.y").remove();
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+  }
+
+  return [ svg ];
+};
+
+function segColor(c) {
+  switch (c.toLowerCase()) {
+    case "founders":
+      color = "#541714";
+      break;
+    case "series a":
+      color = "#938172";
+      break;
+    case "option pool":
+      color = "#cc9e61";
+      break;
+    case "seed":
+      color = "#626266";
+      break;
+  }
+  return color;
+}
+
+interestRates = createStackChart(calcIRRs(data));
+
+function updateInterestRateCharts() {
+    d = calcIRRs(data);
+    for (i = 0; i < interestRates.length; i++) {
+      interestRates[i].update(d);
+    }
+}
+
+function updateOnInterestRateChange(value) {
+  interest_rate = parseFloat(value);
+  updateInterestRateCharts();
+}
+
+function getEvent() {
+  if (/Trident/.test(navigator.userAgent) ||
+      /MSIE/.test(navigator.userAgent)) {
+    return 'change';
+  }
+  return "input";
+}
+
+d3.select("#slider-interestrate")
+.on(getEvent(), function() {
+updateOnInterestRateChange(this.value);
+});
+
+function updateInterestRate() {
+d3.select("#slider-interestrate").property("value", interest_rate);
+d3.select("#interestrate").text(d3.format("%")(interest_rate));
+}
+
+</script>
