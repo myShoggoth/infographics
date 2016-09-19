@@ -522,6 +522,7 @@ function getEvent() {
 d3.select("#slider-interestrate")
 .on(getEvent(), function() {
 updateOnInterestRateChange(this.value);
+updateInterestRate();
 });
 
 function updateInterestRate() {
@@ -529,4 +530,5 @@ d3.select("#slider-interestrate").property("value", interest_rate);
 d3.select("#interestrate").text(d3.format("%")(interest_rate));
 }
 
+updateInterestRate();
 </script>
