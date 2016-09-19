@@ -323,7 +323,7 @@ var data = [
 }
 ];
 
-var margin = {top: 10, right: 100, bottom: 40, left: 70},
+var margin = {top: 10, right: 40, bottom: 40, left: 100},
     width = 700 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
@@ -423,8 +423,11 @@ function createStackChart(d) {
   browser.append("text")
     .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
     .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
-    .attr("x", 0)
+    .attr("x", "-5em")
     .attr("dy", ".35em")
+    .attr("class", "areaText")
+    .attr("font-size", "16")
+    .style("fill", function(d) { return "white"; })
     .text(function(d) { return d.name; });
 
   svg.append("g")
@@ -435,6 +438,20 @@ function createStackChart(d) {
   svg.append("g")
     .attr("class", "y axis")
     .call(yAxis);
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom)
+    .style("text-anchor", "middle")
+    .text("Exit Date");
+
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x", 0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Minimum Capital to Return");
 
   svg.update = function(nD) {
     var browsers2 = stack(color.domain().map(function(name) {
@@ -468,8 +485,11 @@ function createStackChart(d) {
         .select("text")
         .datum(function(d) { return { name: d.name, value: d.values[d.values.length - 1]}; })
         .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
-        .attr("x", 0)
+        .attr("x", "-5em")
         .attr("dy", ".35em")
+        .attr("class", "areaText")
+        .attr("font-size", "16")
+        .style("fill", function(d) { return "white"; })
         .text(function(d) { return d.name; });
     d3.select("g.y").remove();
     svg.append("g")
